@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ro'yxatdan o'tish — FreelanceUZ{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="auth-bg-orb"></div>
+    <div class="auth-bg-orb"></div>
+  </div>
+
+  <div class="auth-card" style="max-width:520px;">
+    <div class="auth-logo">
+      <a href="/" class="nav-logo">
+        <span class="logo-mark">F</span>
+        <span class="logo-text">reelance<em>UZ</em></span>
+      </a>
+    </div>
+
+    <div class="auth-title">
+      <h2>Hisob yaratish</h2>
+      <p>O'zbekistoning eng yaxshi freelance platformasiga qo'shiling</p>
+    </div>
+
+    <!-- Role selector -->
+    <div class="form-group">
+      <label class="form-label">Men kim sifatida ro'yxatdan o'taman</label>
+      <div class="role-selector">
+        <label class="role-option selected">
+          <input type="radio" name="role" value="freelancer" checked>
+          <span class="role-icon">💼</span>
+          <span class="role-name">Freelancer</span>
+          <span class="role-desc">Ish topib, daromad qilaman</span>
+        </label>
+        <label class="role-option">
+          <input type="radio" name="role" value="client">
+          <span class="role-icon">🏢</span>
+          <span class="role-name">Mijoz</span>
+          <span class="role-desc">Loyihalar uchun mutaxassis izlayman</span>
+        </label>
+      </div>
+    </div>
+
+    <form method="post" action="{% url 'signup' %}">
+      {% csrf_token %}
+      <input type="hidden" name="role" id="roleInput" value="freelancer">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="form-group">
+          <label class="form-label" for="first_name">Ism</label>
+          <input type="text" class="form-control" id="first_name" name="first_name"
+            placeholder="Akbar" required autocomplete="given-name"
+            value="{{ form.first_name.value|default:'' }}">
+          {% if form.first_name.errors %}
+            <span class="form-error">{{ form.first_name.errors.0 }}</span>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="last_name">Familiya</label>
+          <input type="text" class="form-control" id="last_name" name="last_name"
+            placeholder="Toshmatov" autocomplete="family-name"
+            value="{{ form.last_name.value|default:'' }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Foydalanuvchi nomi</label>
+        <input type="text" class="form-control" id="username" name="username"
+          placeholder="akbar_dev" required autocomplete="username"
+          value="{{ form.username.value|default:'' }}">
+        {% if form.username.errors %}
+          <span class="form-error">{{ form.username.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email manzil</label>
+        <input type="email" class="form-control" id="email" name="email"
+          placeholder="akbar@example.com" required autocomplete="email"
+          value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}
+          <span class="form-error">{{ form.email.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password1">Parol</label>
+        <div style="position:relative;">
+          <input type="password" class="form-control" id="password1" name="password1"
+            placeholder="Kamida 8 ta belgi" required autocomplete="new-password">
+          <button type="button" class="toggle-pass" onclick="togglePassword('password1', this)"
+            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.85rem;padding:4px;">
+            👁
+          </button>
+        </div>
+        {% if form.password1.errors %}
+          <span class="form-error">{{ form.password1.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password2">Parolni tasdiqlash</label>
+        <div style="position:relative;">
+          <input type="password" class="form-control" id="password2" name="password2"
+            placeholder="Parolni qayta kiriting" required autocomplete="new-password">
+          <button type="button" class="toggle-pass" onclick="togglePassword('password2', this)"
+            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.85rem;padding:4px;">
+            👁
+          </button>
+        </div>
+        {% if form.password2.errors %}
+          <span class="form-error">{{ form.password2.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Password strength -->
+      <div style="margin:-8px 0 20px;">
+        <div class="progress-bar" style="height:4px;">
+          <div class="progress-fill" id="passStrength" style="width:0%;background:var(--danger);"></div>
+        </div>
+        <span id="passStrengthLabel" style="font-size:0.75rem;color:var(--text-muted);"></span>
+      </div>
+
+      <div class="form-group" style="flex-direction:row;align-items:flex-start;gap:10px;margin-bottom:28px;">
+        <input type="checkbox" id="agree" name="agree" required
+          style="width:16px;height:16px;margin-top:2px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;">
+        <label for="agree" style="font-size:0.85rem;color:var(--text-secondary);cursor:pointer;line-height:1.5;">
+          <a href="#" style="color:var(--accent);">Foydalanish shartlari</a> va
+          <a href="#" style="color:var(--accent);">Maxfiylik siyosati</a>ga roziman
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg">
+        Ro'yxatdan o'tish
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Hisobingiz bormi? <a href="{% url 'login' %}">Kirish</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Sync role selection
+  document.querySelectorAll('.role-option').forEach(option => {
+    option.addEventListener('click', () => {
+      const val = option.querySelector('input').value;
+      document.getElementById('roleInput').value = val;
+    });
+  });
+
+  // Password visibility toggle
+  function togglePassword(id, btn) {
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+  }
+
+  // Password strength
+  document.getElementById('password1')?.addEventListener('input', function () {
+    const val = this.value;
+    const fill = document.getElementById('passStrength');
+    const label = document.getElementById('passStrengthLabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const colors = ['#ff4d6d', '#ff9a3c', '#f5a623', '#3ecf8e'];
+    const labels = ['', 'Zaif', "O'rtacha", 'Yaxshi', 'Kuchli'];
+    fill.style.width = (score * 25) + '%';
+    fill.style.background = colors[score - 1] || 'var(--danger)';
+    label.textContent = labels[score] || '';
+    label.style.color = colors[score - 1] || 'var(--text-muted)';
+  });
+</script>
+{% endblock %}

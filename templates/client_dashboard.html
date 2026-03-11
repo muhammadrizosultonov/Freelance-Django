@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mijoz Dashboard — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div style="display:flex;align-items:center;gap:12px;padding:0 12px 24px;border-bottom:1px solid var(--border);margin-bottom:24px;">
+        <div class="avatar avatar-md" style="background:rgba(77,159,255,0.15);color:var(--info);">
+          {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+          {% else %}
+            Muhammadrizo
+          {% endif %}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ user.get_full_name|default:user.username }}
+          </div>
+          <div style="font-size:0.75rem;color:var(--info);display:flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;background:var(--info);border-radius:50%;display:inline-block;"></span>
+            Mijoz
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-label">Loyihalar</div>
+      <a href="#" class="sidebar-link active">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">➕</span> Yangi loyiha
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">📁</span> Mening loyihalarim
+        <span class="count">{{ projects_count|default:'4' }}</span>
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">📨</span> Arizalar
+        <span class="count">{{ pending_proposals|default:'12' }}</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Moliya</div>
+      <a href="#" class="sidebar-link">
+        <span class="icon">💳</span> To'lovlar
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">🧾</span> Hisobotlar
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Boshqa</div>
+      <a href="#" class="sidebar-link">
+        <span class="icon">💬</span> Xabarlar
+        <span class="count">{{ unread_messages|default:'3' }}</span>
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">👤</span> Profil
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">⚙️</span> Sozlamalar
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="dashboard-main">
+
+    <div class="dashboard-header animate-in">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+        <div>
+          <h1>Salom, {{ user.first_name|default:user.username }}! 🚀</h1>
+          <p style="color:var(--text-secondary);">Loyihalaringizni boshqaring va eng yaxshi freelancerlarni toping</p>
+        </div>
+        <a href="#" class="btn btn-primary">
+          ➕ Yangi loyiha joylash
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card animate-in animate-delay-1">
+        <div class="stat-icon" style="background:rgba(77,159,255,0.12);">📁</div>
+        <div class="stat-value" data-count="{{ total_projects|default:'8' }}">0</div>
+        <div class="stat-label">Jami loyihalar</div>
+        <div class="stat-change">4 ta faol</div>
+      </div>
+      <div class="stat-card animate-in animate-delay-2">
+        <div class="stat-icon" style="background:rgba(62,207,142,0.12);">✅</div>
+        <div class="stat-value" data-count="{{ completed_projects|default:'5' }}">0</div>
+        <div class="stat-label">Tugatilgan</div>
+        <div class="stat-change">↑ 2 bu oy</div>
+      </div>
+      <div class="stat-card animate-in animate-delay-3">
+        <div class="stat-icon" style="background:rgba(245,166,35,0.12);">💰</div>
+        <div class="stat-value" data-count="{{ total_spent|default:'6800000' }}" data-suffix=" so'm">0</div>
+        <div class="stat-label">Jami sarflangan</div>
+        <div class="stat-change">Bu oy 1.2M so'm</div>
+      </div>
+      <div class="stat-card animate-in animate-delay-4">
+        <div class="stat-icon" style="background:rgba(255,77,109,0.12);">📨</div>
+        <div class="stat-value" data-count="{{ pending_proposals|default:'12' }}">0</div>
+        <div class="stat-label">Kutilayotgan arizalar</div>
+        <div class="stat-change">3 ta yangi bugun</div>
+      </div>
+    </div>
+
+    <!-- Active projects -->
+    <div style="margin-bottom:36px;">
+      <div class="section-header animate-in">
+        <h2 class="section-title">Faol loyihalar</h2>
+        <a href="#" class="btn btn-ghost btn-sm">Barchasini ko'rish →</a>
+      </div>
+
+      <div class="projects-grid">
+        {% if active_projects %}
+          {% for project in active_projects %}
+          <div class="project-card animate-in">
+            <div class="project-card-content">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span class="badge badge-success">Faol</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">{{ project.category }}</span>
+              </div>
+              <h3 class="project-title">{{ project.title }}</h3>
+              <p class="project-desc">{{ project.description|truncatewords:18 }}</p>
+              <div class="project-meta">
+                <span class="project-budget">{{ project.budget }}</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">
+                    {{ project.freelancer.first_name.0|default:'?' }}
+                  </div>
+                  <span style="font-size:0.82rem;color:var(--text-secondary);">{{ project.freelancer.get_full_name|default:'Tayinlanmagan' }}</span>
+                </div>
+              </div>
+              <div class="progress-bar" style="margin-top:12px;">
+                <div class="progress-fill" style="width:{{ project.progress }}%;"></div>
+              </div>
+              <div style="text-align:right;font-size:0.78rem;color:var(--text-muted);margin-top:4px;">{{ project.progress }}% bajarildi</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <!-- Demo projects -->
+          <div class="project-card animate-in animate-delay-1">
+            <div class="project-card-content">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span class="badge badge-success">Faol</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Web dizayn</span>
+              </div>
+              <h3 class="project-title">Korporativ sayt yaratish</h3>
+              <p class="project-desc">Kompaniyamiz uchun zamonaviy, responsive va SEO-optimallashtirilgan sayt kerak.</p>
+              <div class="project-meta">
+                <span class="project-budget">2,000,000 so'm</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
+                  <span style="font-size:0.82rem;color:var(--text-secondary);">Akbar Toshmatov</span>
+                </div>
+              </div>
+              <div class="progress-bar" style="margin-top:12px;">
+                <div class="progress-fill" style="width:70%;"></div>
+              </div>
+              <div style="text-align:right;font-size:0.78rem;color:var(--text-muted);margin-top:4px;">70% bajarildi</div>
+            </div>
+          </div>
+
+          <div class="project-card animate-in animate-delay-2">
+            <div class="project-card-content">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span class="badge badge-info">Ariza kutilmoqda</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Mobil ilovalar</span>
+              </div>
+              <h3 class="project-title">Android delivery ilovasi</h3>
+              <p class="project-desc">Oziq-ovqat yetkazib berish xizmati uchun to'liq funksional Android ilovasi kerak.</p>
+              <div class="project-meta">
+                <span class="project-budget">5,500,000 so'm</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="avatar avatar-sm" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">?</div>
+                  <span style="font-size:0.82rem;color:var(--text-muted);">Tayinlanmagan</span>
+                </div>
+              </div>
+              <div style="margin-top:12px;font-size:0.82rem;color:var(--info);">8 ta ariza kelgan</div>
+            </div>
+          </div>
+
+          <div class="project-card animate-in animate-delay-3">
+            <div class="project-card-content">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span class="badge badge-success">Faol</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Marketing</span>
+              </div>
+              <h3 class="project-title">SMM va content yaratish</h3>
+              <p class="project-desc">Instagram, Telegram kanallarimiz uchun oylik content strategiyasi va postlar.</p>
+              <div class="project-meta">
+                <span class="project-budget">800,000 so'm/oy</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">N</div>
+                  <span style="font-size:0.82rem;color:var(--text-secondary);">Nilufar Rahimova</span>
+                </div>
+              </div>
+              <div class="progress-bar" style="margin-top:12px;">
+                <div class="progress-fill" style="width:40%;"></div>
+              </div>
+              <div style="text-align:right;font-size:0.78rem;color:var(--text-muted);margin-top:4px;">40% bajarildi</div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent proposals -->
+    <div class="animate-in">
+      <div class="section-header">
+        <h2 class="section-title">So'nggi arizalar</h2>
+        <a href="#" class="btn btn-ghost btn-sm">Barchasini ko'rish →</a>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Freelancer</th>
+              <th>Loyiha</th>
+              <th>Taklif narxi</th>
+              <th>Reyting</th>
+              <th>Amal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">D</div>
+                  <div>
+                    <div style="color:var(--text-primary);font-weight:600;font-size:0.88rem;">Dilshod Nazarov</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Python developer</div>
+                  </div>
+                </div>
+              </td>
+              <td>Android delivery ilovasi</td>
+              <td style="color:var(--accent);font-weight:600;">4,800,000 so'm</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <span style="color:var(--accent);">★</span>
+                  <span style="font-size:0.88rem;font-weight:600;">4.8</span>
+                  <span style="font-size:0.75rem;color:var(--text-muted);">(32)</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-success btn-sm">Qabul</button>
+                  <button class="btn btn-outline btn-sm">Rad</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="avatar avatar-sm" style="background:rgba(77,159,255,0.15);color:var(--info);">Z</div>
+                  <div>
+                    <div style="color:var(--text-primary);font-weight:600;font-size:0.88rem;">Zulfiya Mahmudova</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Flutter developer</div>
+                  </div>
+                </div>
+              </td>
+              <td>Android delivery ilovasi</td>
+              <td style="color:var(--accent);font-weight:600;">5,200,000 so'm</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <span style="color:var(--accent);">★</span>
+                  <span style="font-size:0.88rem;font-weight:600;">4.9</span>
+                  <span style="font-size:0.75rem;color:var(--text-muted);">(18)</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-success btn-sm">Qabul</button>
+                  <button class="btn btn-outline btn-sm">Rad</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}

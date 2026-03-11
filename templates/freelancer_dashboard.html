@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <!-- User mini profile -->
+      <div style="display:flex;align-items:center;gap:12px;padding:0 12px 24px;border-bottom:1px solid var(--border);margin-bottom:24px;">
+        <div class="avatar avatar-md" style="background:var(--accent-dim);">
+          {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+          {% else %}
+            {{ Salom }}
+          {% endif %}
+        </div>
+        <div style="min-width:0;">
+          <div style="font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ user.get_full_name|default:user.username }}
+          </div>
+          <div style="font-size:0.75rem;color:var(--success);display:flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;background:var(--success);border-radius:50%;display:inline-block;"></span>
+            Freelancer
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-label">Asosiy</div>
+      <a href="#" class="sidebar-link active">
+        <span class="icon">📊</span> Dashboard
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">🔍</span> Loyihalar toping
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">📋</span> Arizalarim
+        <span class="count">{{ active_proposals|default:'3' }}</span>
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">⚡</span> Faol ishlar
+        <span class="count">{{ active_jobs|default:'2' }}</span>
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Moliya</div>
+      <a href="#" class="sidebar-link">
+        <span class="icon">💰</span> Daromadlar
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">🧾</span> To'lovlar tarixi
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">🏦</span> Pul yechish
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Boshqa</div>
+      <a href="#" class="sidebar-link">
+        <span class="icon">💬</span> Xabarlar
+        <span class="count">{{ unread_messages|default:'5' }}</span>
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">👤</span> Profil
+      </a>
+      <a href="#" class="sidebar-link">
+        <span class="icon">⚙️</span> Sozlamalar
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="dashboard-main">
+
+    <!-- Header -->
+    <div class="dashboard-header animate-in">
+      <h1>Xush kelibsiz, {{ user.first_name|default:user.username }}! 👋</h1>
+      <p style="color:var(--text-secondary);">Bu haftadagi faoliyatingizga umumiy ko'rinish</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card animate-in animate-delay-1">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" data-count="{{ total_earnings|default:'4250000' }}" data-suffix=" so'm">0</div>
+        <div class="stat-label">Jami daromad</div>
+        <div class="stat-change">↑ 12% o'tgan oyga nisbatan</div>
+      </div>
+      <div class="stat-card animate-in animate-delay-2">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" data-count="{{ completed_jobs|default:'18' }}">0</div>
+        <div class="stat-label">Tugatilgan ishlar</div>
+        <div class="stat-change">↑ 3 bu oy</div>
+      </div>
+      <div class="stat-card animate-in animate-delay-3">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value">{{ rating|default:'4.9' }}</div>
+        <div class="stat-label">Reyting</div>
+        <div class="stat-change">{{ reviews_count|default:'24' }} sharh</div>
+      </div>
+      <div class="stat-card animate-in animate-delay-4">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value" data-count="{{ active_proposals|default:'3' }}">0</div>
+        <div class="stat-label">Faol arizalar</div>
+        <div class="stat-change">2 ta ko'rib chiqilmoqda</div>
+      </div>
+    </div>
+
+    <!-- Profile completion -->
+    <div class="card animate-in" style="margin-bottom:28px;">
+      <div class="card-header" style="margin-bottom:16px;">
+        <h3 class="section-title">Profil to'liqligi</h3>
+        <span style="font-family:var(--font-display);font-weight:800;color:var(--accent);">{{ profile_completion|default:'75' }}%</span>
+      </div>
+      <div class="progress-bar" style="margin-bottom:16px;">
+        <div class="progress-fill" style="width:{{ profile_completion|default:'75' }}%;"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--success);">
+          ✅ Asosiy ma'lumotlar
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--success);">
+          ✅ Ko'nikmalar
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-muted);">
+          ⭕ Portfolio qo'shish
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-muted);">
+          ⭕ Sertifikatlar
+        </div>
+      </div>
+    </div>
+
+    <!-- Active jobs -->
+    <div style="margin-bottom:32px;">
+      <div class="section-header animate-in">
+        <h2 class="section-title">Faol loyihalar</h2>
+        <a href="#" class="btn btn-ghost btn-sm">Barchasini ko'rish →</a>
+      </div>
+
+      {% if active_jobs_list %}
+        {% for job in active_jobs_list %}
+        <div class="card animate-in" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <h4 style="font-size:1rem;">{{ job.title }}</h4>
+                <span class="badge badge-success">Faol</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;">{{ job.description|truncatewords:20 }}</p>
+              <div style="display:flex;align-items:center;gap:16px;">
+                <div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Muddat</div>
+                  <div style="font-size:0.85rem;font-weight:600;">{{ job.deadline }}</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">To'lov</div>
+                  <div style="font-size:0.85rem;font-weight:600;color:var(--accent);">{{ job.budget }}</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">Bajarilish</div>
+              <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--accent);">{{ job.progress }}%</div>
+            </div>
+          </div>
+          <div class="progress-bar" style="margin-top:16px;">
+            <div class="progress-fill" style="width:{{ job.progress }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <!-- Demo data -->
+        <div class="card animate-in animate-delay-1" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <h4 style="font-size:1rem;">E-commerce sayt dizayni</h4>
+                <span class="badge badge-success">Faol</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;">Figma asosida to'liq responsive dizayn va prototip yaratish</p>
+              <div style="display:flex;align-items:center;gap:16px;">
+                <div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Muddat</div>
+                  <div style="font-size:0.85rem;font-weight:600;">15 kun</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">To'lov</div>
+                  <div style="font-size:0.85rem;font-weight:600;color:var(--accent);">1,200,000 so'm</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">Bajarilish</div>
+              <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--accent);">65%</div>
+            </div>
+          </div>
+          <div class="progress-bar" style="margin-top:16px;">
+            <div class="progress-fill" style="width:65%;"></div>
+          </div>
+        </div>
+
+        <div class="card animate-in animate-delay-2" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <h4 style="font-size:1rem;">Django REST API ishlab chiqish</h4>
+                <span class="badge badge-info">Ko'rib chiqilmoqda</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;">Mobil ilova uchun authentication va CRUD endpoint'lar</p>
+              <div style="display:flex;align-items:center;gap:16px;">
+                <div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">Muddat</div>
+                  <div style="font-size:0.85rem;font-weight:600;">7 kun</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75font-size;color:var(--text-muted);margin-bottom:4px;">To'lov</div>
+                  <div style="font-size:0.85rem;font-weight:600;color:var(--accent);">800,000 so'm</div>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;">Bajarilish</div>
+              <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--accent);">30%</div>
+            </div>
+          </div>
+          <div class="progress-bar" style="margin-top:16px;">
+            <div class="progress-fill" style="width:30%;"></div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Recent proposals -->
+    <div class="animate-in">
+      <div class="section-header">
+        <h2 class="section-title">So'nggi arizalar</h2>
+        <a href="#" class="btn btn-ghost btn-sm">Barchasini ko'rish →</a>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Loyiha</th>
+              <th>Buyurtmachi</th>
+              <th>Taklif narxi</th>
+              <th>Holat</th>
+              <th>Sana</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if proposals %}
+              {% for proposal in proposals %}
+              <tr>
+                <td style="color:var(--text-primary);font-weight:500;">{{ proposal.project.title }}</td>
+                <td>{{ proposal.project.client.get_full_name }}</td>
+                <td style="color:var(--accent);font-weight:600;">{{ proposal.price }}</td>
+                <td>
+                  <span class="badge {% if proposal.status == 'accepted' %}badge-success{% elif proposal.status == 'rejected' %}badge-danger{% else %}badge-info{% endif %}">
+                    {{ proposal.get_status_display }}
+                  </span>
+                </td>
+                <td>{{ proposal.created_at|date:"d M Y" }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <!-- Demo rows -->
+              <tr>
+                <td style="color:var(--text-primary);font-weight:500;">Telegram bot yaratish</td>
+                <td>Bobur Karimov</td>
+                <td style="color:var(--accent);font-weight:600;">450,000 so'm</td>
+                <td><span class="badge badge-info">Ko'rib chiqilmoqda</span></td>
+                <td>8 Mar 2025</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-primary);font-weight:500;">Logo dizayni</td>
+                <td>Shaxlo Yusupova</td>
+                <td style="color:var(--accent);font-weight:600;">180,000 so'm</td>
+                <td><span class="badge badge-success">Qabul qilindi</span></td>
+                <td>5 Mar 2025</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-primary);font-weight:500;">SEO optimizatsiya</td>
+                <td>IT Solutions LLC</td>
+                <td style="color:var(--accent);font-weight:600;">600,000 so'm</td>
+                <td><span class="badge badge-danger">Rad etildi</span></td>
+                <td>1 Mar 2025</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+{% endblock %}

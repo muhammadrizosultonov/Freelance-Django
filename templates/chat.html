@@ -1,0 +1,274 @@
+{% extends 'freelance/base.html' %}
+{% load static %}
+
+{% block title %}Xabarlar — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+
+  <!-- Chat sidebar: conversation list -->
+  <div class="chat-sidebar">
+    <div class="chat-sidebar-header">
+      <h3 style="font-size:1.1rem;margin-bottom:2px;">Xabarlar</h3>
+      <p style="font-size:0.8rem;color:var(--text-muted);">{{ conversations.count|default:'6' }} ta suhbat</p>
+      <div class="chat-search">
+        <input type="text" placeholder="Qidirish..." id="chatSearchInput">
+      </div>
+    </div>
+
+    <div class="chat-list" id="chatList">
+      {% if conversations %}
+        {% for conv in conversations %}
+        <div class="chat-item {% if forloop.first %}active{% endif %}"
+             data-chat="{{ conv.id }}"
+             onclick="openChat('{{ conv.id }}', '{{ conv.other_user.get_full_name }}')">
+          <div class="avatar avatar-md" style="background:var(--accent-dim);">
+            {% if conv.other_user.profile.avatar %}
+              <img src="{{ conv.other_user.profile.avatar.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+            {% else %}
+              {{ conv.other_user.first_name.0|default:conv.other_user.username.0|upper }}
+            {% endif %}
+          </div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">{{ conv.other_user.get_full_name|default:conv.other_user.username }}</div>
+            <div class="chat-item-preview">{{ conv.last_message.content|truncatechars:30|default:"Hali xabar yo'q" }}</div>
+          </div>
+          <div class="chat-item-meta">
+            <span class="chat-item-time">{{ conv.last_message.timestamp|time:"H:i"|default:"" }}</span>
+            {% if conv.unread_count > 0 %}
+              <div class="unread-dot"></div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <!-- Demo conversations -->
+        <div class="chat-item active" data-user="Akbar Toshmatov">
+          <div class="avatar avatar-md" style="background:var(--accent-dim);">A</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">Akbar Toshmatov</div>
+            <div class="chat-item-preview">Loyiha haqida gaplashaylik</div>
+          </div>
+          <div class="chat-item-meta">
+            <span class="chat-item-time">14:32</span>
+            <div class="unread-dot"></div>
+          </div>
+        </div>
+
+        <div class="chat-item" data-user="Nilufar Rahimova">
+          <div class="avatar avatar-md" style="background:rgba(62,207,142,0.15);color:var(--success);">N</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">Nilufar Rahimova</div>
+            <div class="chat-item-preview">Rahmat, tez orada yuboraman</div>
+          </div>
+          <div class="chat-item-meta">
+            <span class="chat-item-time">12:15</span>
+          </div>
+        </div>
+
+        <div class="chat-item" data-user="Bobur Karimov">
+          <div class="avatar avatar-md" style="background:rgba(77,159,255,0.15);color:var(--info);">B</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">Bobur Karimov</div>
+            <div class="chat-item-preview">Qachon tayyor bo'ladi?</div>
+          </div>
+          <div class="chat-item-meta">
+            <span class="chat-item-time">Kecha</span>
+            <div class="unread-dot"></div>
+          </div>
+        </div>
+
+        <div class="chat-item" data-user="Dilshod Nazarov">
+          <div class="avatar avatar-md" style="background:rgba(255,77,109,0.15);color:var(--danger);">D</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">Dilshod Nazarov</div>
+            <div class="chat-item-preview">OK, men tushundim. Boshlaylik!</div>
+          </div>
+          <div class="chat-item-meta">
+            <span class="chat-item-time">Kecha</span>
+          </div>
+        </div>
+
+        <div class="chat-item" data-user="Zulfiya Mahmudova">
+          <div class="avatar avatar-md" style="background:rgba(155,77,255,0.15);color:#9b4dff;">Z</div>
+          <div class="chat-item-info">
+            <div class="chat-item-name">Zulfiya Mahmudova</div>
+            <div class="chat-item-preview">Siz bilan ishlash juda qulay edi</div>
+          </div>
+          <div class="chat-item-meta">
+            <span class="chat-item-time">2 kun</span>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Chat main area -->
+  <div class="chat-main">
+
+    <!-- Chat header -->
+    <div class="chat-header" id="chatHeaderEl">
+      <div class="avatar avatar-md" style="background:var(--accent-dim);">A</div>
+      <div class="chat-header-info">
+        <h3 id="chatPartnerName">Akbar Toshmatov</h3>
+        <span id="chatPartnerStatus">🟢 Onlayn</span>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" data-tooltip="Video qo'ng'iroq">📹</button>
+        <button class="btn btn-ghost btn-sm" data-tooltip="Ovozli qo'ng'iroq">📞</button>
+        <button class="btn btn-ghost btn-sm" data-tooltip="Loyiha ma'lumoti">ℹ️</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+
+      <!-- Date separator -->
+      <div style="text-align:center;margin:8px 0;">
+        <span style="background:rgba(255,255,255,0.05);padding:6px 14px;border-radius:100px;font-size:0.75rem;color:var(--text-muted);">Bugun</span>
+      </div>
+
+      <!-- Demo messages -->
+      <div class="message-group">
+        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
+        <div>
+          <div class="message-bubble">Salom! Korporativ sayt loyihasi haqida gaplashmoqchi edim.</div>
+          <span class="message-time">09:15</span>
+        </div>
+      </div>
+
+      <div class="message-group own">
+        <div class="avatar avatar-sm" style="background:rgba(245,166,35,0.2);">M</div>
+        <div>
+          <div class="message-bubble">Salom! Ha, albatta. Qanday funksionallik kerak?</div>
+          <span class="message-time">09:16</span>
+        </div>
+      </div>
+
+      <div class="message-group">
+        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
+        <div>
+          <div class="message-bubble">Asosiy sahifa, xizmatlar, portfolio va aloqa sahifalari kerak. Dizayn zamonaviy bo'lishi shart.</div>
+          <span class="message-time">09:18</span>
+        </div>
+      </div>
+
+      <div class="message-group own">
+        <div class="avatar avatar-sm" style="background:rgba(245,166,35,0.2);">M</div>
+        <div>
+          <div class="message-bubble">Tushundim. Figmada prototip yaratib ko'rsatib beraman. 2-3 kun vaqt bersangiz yetarli. 💪</div>
+          <span class="message-time">09:20</span>
+        </div>
+      </div>
+
+      <div class="message-group">
+        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
+        <div>
+          <div class="message-bubble">Ajoyib! Narx haqida ham gaplashaylik — byudjetimiz 2,000,000 so'm atrofida.</div>
+          <span class="message-time">09:22</span>
+        </div>
+      </div>
+
+      <div class="message-group own">
+        <div class="avatar avatar-sm" style="background:rgba(245,166,35,0.2);">M</div>
+        <div>
+          <div class="message-bubble">Yaxshi, bu narx mos keladi. Shartnoma tuzib olsak bo'ladi. Men today Figma faylni yuboraman.</div>
+          <span class="message-time">09:24</span>
+        </div>
+      </div>
+
+      <div class="message-group">
+        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
+        <div>
+          <div class="message-bubble">Loyiha haqida gaplashaylik 👋</div>
+          <span class="message-time">14:32</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Typing indicator -->
+    <div id="typingIndicator" style="padding:8px 24px;display:none;">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.82rem;">
+        <div style="display:flex;gap:3px;">
+          <span style="width:6px;height:6px;background:var(--text-muted);border-radius:50%;animation:typing-dot 1.4s infinite both;animation-delay:0s;"></span>
+          <span style="width:6px;height:6px;background:var(--text-muted);border-radius:50%;animation:typing-dot 1.4s infinite both;animation-delay:0.2s;"></span>
+          <span style="width:6px;height:6px;background:var(--text-muted);border-radius:50%;animation:typing-dot 1.4s infinite both;animation-delay:0.4s;"></span>
+        </div>
+        <span id="typingName">Akbar</span> yozyapti...
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="chat-input-area">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fileUpload').click()" data-tooltip="Fayl yuborish">📎</button>
+        <button class="btn btn-ghost btn-sm" data-tooltip="Emoji">😊</button>
+        <input type="file" id="fileUpload" style="display:none" multiple>
+      </div>
+      <div class="chat-input-wrapper">
+        <textarea
+          class="chat-input"
+          id="chatInput"
+          placeholder="Xabar yozing..."
+          rows="1"
+        ></textarea>
+        <button class="chat-send-btn" id="sendBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Chat search filter
+  document.getElementById('chatSearchInput')?.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    document.querySelectorAll('.chat-item').forEach(item => {
+      const name = item.querySelector('.chat-item-name')?.textContent.toLowerCase() || '';
+      item.style.display = name.includes(query) ? '' : 'none';
+    });
+  });
+
+  // Open chat
+  function openChat(id, name) {
+    document.getElementById('chatPartnerName').textContent = name || 'Chat';
+    document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+    const item = document.querySelector(`[data-chat="${id}"], [data-user="${name}"]`);
+    item?.classList.add('active');
+    const dot = item?.querySelector('.unread-dot');
+    if (dot) dot.remove();
+
+    // Scroll to bottom
+    const msgs = document.getElementById('chatMessages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  // Scroll to bottom on load
+  const chatMsgs = document.getElementById('chatMessages');
+  if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+  // File upload preview
+  document.getElementById('fileUpload')?.addEventListener('change', function() {
+    const files = Array.from(this.files);
+    if (files.length === 0) return;
+    const chatInput = document.getElementById('chatInput');
+    chatInput.value = files.map(f => `📎 ${f.name}`).join('\n');
+    this.value = '';
+  });
+</script>
+{% endblock %}

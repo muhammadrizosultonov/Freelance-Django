@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FreelanceUZ{% endblock %}</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<!-- Noise overlay -->
+<div class="noise-overlay"></div>
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">
+            <span class="logo-mark">F</span>
+            <span class="logo-text">reelance<em>UZ</em></span>
+        </a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <span class="nav-greeting">Salom, {{ user.first_name|default:user.username }}</span>
+                {% if user.profile.role == 'freelancer' %}
+                    <a href="{% url 'freelancer_dashboard' %}" class="nav-link">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'client_dashboard' %}" class="nav-link">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'profile' %}" class="nav-link">Profil</a>
+                <a href="{% url 'chat' %}" class="nav-link">Xabarlar</a>
+                <a href="{% url 'logout' %}" class="btn btn-outline">Chiqish</a>
+            {% else %}
+                <a href="#" class="nav-link">Kirish</a>
+                <a href="#" class="btn btn-primary">Ro'yxatdan o'tish</a>
+            {% endif %}
+        </div>
+        <button class="nav-toggle" id="navToggle">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-inner">
+        {% if user.is_authenticated %}
+            <a href="{% url 'freelancer_dashboard' %}" class="mobile-link">Dashboard</a>
+            <a href="{% url 'profile' %}" class="mobile-link">Profil</a>
+            <a href="{% url 'chat' %}" class="mobile-link">Xabarlar</a>
+            <a href="{% url 'logout' %}" class="mobile-link">Chiqish</a>
+        {% else %}
+            <a href="#" class="mobile-link">Kirish</a>
+            <a href="#" class="mobile-link">Ro'yxatdan o'tish</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Flash messages -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="message message-{{ message.tags }} show" id="msg-{{ forloop.counter }}">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()">✕</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main content -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <a href="/" class="nav-logo">
+                <span class="logo-mark">F</span>
+                <span class="logo-text">reelance<em>UZ</em></span>
+            </a>
+            <p>O'zbekistoning eng yaxshi freelance platformasi</p>
+        </div>
+        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Platforma</h4>
+                <a href="#">Freelancerlar</a>
+                <a href="#">Loyihalar</a>
+                <a href="#">Kategoriyalar</a>
+            </div>
+            <div class="footer-col">
+                <h4>Kompaniya</h4>
+                <a href="#">Biz haqimizda</a>
+                <a href="#">Blog</a>
+                <a href="#">Aloqa</a>
+            </div>
+            <div class="footer-col">
+                <h4>Qo'llab-quvvatlash</h4>
+                <a href="#">Yordam markazi</a>
+                <a href="#">Maxfiylik</a>
+                <a href="#">Shartlar</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2025 FreelanceUZ. Barcha huquqlar himoyalangan.</p>
+    </div>
+</footer>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

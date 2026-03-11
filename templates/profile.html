@@ -1,0 +1,448 @@
+{% extends 'freelance/base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} — FreelanceUZ{% endblock %}
+
+{% block content %}
+
+<!-- Profile header background -->
+<div class="profile-header-bg">
+  {% if is_own_profile and user.profile.cover_photo %}
+    <img src="{{ user.profile.cover_photo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;opacity:0.4;">
+  {% endif %}
+</div>
+
+<div class="profile-content" style="padding-top:0;">
+
+  <!-- Avatar + actions -->
+  <div class="profile-avatar-section">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar-img">
+        {% if profile_user.profile.avatar %}
+          <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.get_full_name }}"
+            style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+        {% else %}
+          {{ profile_user.first_name.0|default:profile_user.username.0|upper }}
+        {% endif %}
+      </div>
+      {% if profile_user.profile.is_online %}
+        <div class="profile-online"></div>
+      {% endif %}
+    </div>
+
+    <div class="profile-info">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <h1>{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+        {% if profile_user.profile.is_verified %}
+          <span class="badge badge-success">✓ Tasdiqlangan</span>
+        {% endif %}
+        {% if profile_user.profile.role == 'freelancer' %}
+          <span class="badge badge-accent">Freelancer</span>
+        {% else %}
+          <span class="badge badge-info">Mijoz</span>
+        {% endif %}
+      </div>
+      <p style="margin-top:4px;">{{ profile_user.profile.title|default:"Professional Freelancer" }}</p>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:8px;flex-wrap:wrap;">
+        <span style="font-size:0.82rem;color:var(--text-muted);">
+          📍 {{ profile_user.profile.location|default:"O'zbekiston" }}
+        </span>
+        <span style="font-size:0.82rem;color:var(--text-muted);">
+          📅 {{ profile_user.date_joined|date:"M Y" }} dan beri
+        </span>
+        {% if profile_user.profile.role == 'freelancer' %}
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div class="stars">★★★★★</div>
+          <span style="font-size:0.88rem;font-weight:700;">{{ profile_user.profile.rating|default:'4.9' }}</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);">({{ profile_user.profile.reviews_count|default:'24' }} sharh)</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="profile-actions">
+      {% if is_own_profile %}
+        <a href="#" class="btn btn-primary" id="editProfileBtn">✏️ Profilni tahrirlash</a>
+        <a href="#" class="btn btn-outline">⚙️ Sozlamalar</a>
+      {% else %}
+        <a href="{% url 'chat' %}?user={{ profile_user.id }}" class="btn btn-primary">💬 Xabar yuborish</a>
+        <button class="btn btn-outline">⭐ Saqlash</button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats row (for freelancers) -->
+  {% if profile_user.profile.role == 'freelancer' %}
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--accent);">{{ profile_user.profile.completed_jobs|default:'18' }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Tugatilgan ishlar</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--success);">{{ profile_user.profile.success_rate|default:'96' }}%</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Muvaffaqiyat darajasi</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;">{{ profile_user.profile.response_time|default:'2' }}s</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Javob vaqti (soat)</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--info);">{{ profile_user.profile.total_earned|default:'42' }}M</div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Jami daromad (so'm)</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tabs -->
+  <div class="profile-tabs">
+    <button class="profile-tab active" data-tab="about">Haqida</button>
+    <button class="profile-tab" data-tab="portfolio">Portfolio</button>
+    {% if profile_user.profile.role == 'freelancer' %}
+      <button class="profile-tab" data-tab="skills">Ko'nikmalar</button>
+    {% endif %}
+    <button class="profile-tab" data-tab="reviews">Sharhlar</button>
+  </div>
+
+  <!-- Tab: About -->
+  <div data-content="about">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:32px;">
+
+      <!-- Left: bio, experience -->
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <h3 style="font-size:1rem;margin-bottom:16px;">Haqimda</h3>
+          {% if is_own_profile %}
+            <div id="bioDisplay">
+              <p style="color:var(--text-secondary);line-height:1.7;font-size:0.92rem;">
+                {{ profile_user.profile.bio|default:"Bio hali qo'shilmagan. Profilingizni yanada jozibali qilish uchun o'zingiz haqingizda yozing." }}
+              </p>
+              <button onclick="editBio()" class="btn btn-ghost btn-sm" style="margin-top:12px;">✏️ Tahrirlash</button>
+            </div>
+            <form id="bioForm" style="display:none;" method="post" action="{% url 'profile_update' %}">
+              {% csrf_token %}
+              <textarea name="bio" class="form-control" rows="5"
+                placeholder="O'zingiz haqingizda yozing...">{{ profile_user.profile.bio }}</textarea>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button type="submit" class="btn btn-primary btn-sm">Saqlash</button>
+                <button type="button" onclick="cancelBio()" class="btn btn-outline btn-sm">Bekor</button>
+              </div>
+            </form>
+          {% else %}
+            <p style="color:var(--text-secondary);line-height:1.7;font-size:0.92rem;">
+              {{ profile_user.profile.bio|default:"Foydalanuvchi hali bio qo'shmagan." }}
+            </p>
+          {% endif %}
+        </div>
+
+        {% if profile_user.profile.role == 'freelancer' %}
+        <div class="card" style="margin-bottom:20px;">
+          <h3 style="font-size:1rem;margin-bottom:16px;">Ish tajribasi</h3>
+          {% if profile_user.experiences.exists %}
+            {% for exp in profile_user.experiences.all %}
+            <div style="display:flex;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+              <div style="width:44px;height:44px;background:var(--accent-dim);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🏢</div>
+              <div>
+                <div style="font-weight:700;">{{ exp.title }}</div>
+                <div style="font-size:0.85rem;color:var(--accent);">{{ exp.company }}</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);">{{ exp.start_date }} — {{ exp.end_date|default:'Hozir' }}</div>
+                {% if exp.description %}
+                  <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">{{ exp.description }}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <!-- Demo experience -->
+            <div style="display:flex;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+              <div style="width:44px;height:44px;background:var(--accent-dim);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🏢</div>
+              <div>
+                <div style="font-weight:700;">Senior Frontend Developer</div>
+                <div style="font-size:0.85rem;color:var(--accent);">TechUZ Solutions</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);">2022 — Hozir</div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">React va Vue.js asosida korporativ web ilovalar yaratish</p>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;">
+              <div style="width:44px;height:44px;background:rgba(77,159,255,0.12);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">💻</div>
+              <div>
+                <div style="font-weight:700;">Full Stack Developer</div>
+                <div style="font-size:0.85rem;color:var(--info);">Freelance</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);">2020 — 2022</div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">Turli xil veb loyihalar, Django va React bilan ishlash</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: sidebar info -->
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <h4 style="font-size:0.9rem;margin-bottom:16px;color:var(--text-muted);">ALOQA MA'LUMOTLARI</h4>
+          {% if profile_user.profile.website %}
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span>🌐</span>
+            <a href="{{ profile_user.profile.website }}" target="_blank" style="color:var(--accent);font-size:0.88rem;">{{ profile_user.profile.website }}</a>
+          </div>
+          {% endif %}
+          {% if profile_user.profile.telegram %}
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span>💬</span>
+            <span style="font-size:0.88rem;color:var(--text-secondary);">@{{ profile_user.profile.telegram }}</span>
+          </div>
+          {% endif %}
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span>📧</span>
+            <span style="font-size:0.88rem;color:var(--text-secondary);">{{ profile_user.email }}</span>
+          </div>
+          {% if not is_own_profile %}
+            <a href="{% url 'chat' %}?user={{ profile_user.id }}" class="btn btn-primary btn-full" style="margin-top:8px;">
+              💬 Xabar yuborish
+            </a>
+          {% endif %}
+        </div>
+
+        {% if profile_user.profile.role == 'freelancer' %}
+        <div class="card">
+          <h4 style="font-size:0.9rem;margin-bottom:16px;color:var(--text-muted);">KATEGORIYALAR</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            {% for cat in profile_user.profile.categories.all %}
+              <span class="badge badge-muted">{{ cat.name }}</span>
+            {% empty %}
+              <span class="badge badge-muted">Web Development</span>
+              <span class="badge badge-muted">UI/UX Design</span>
+              <span class="badge badge-muted">Mobile Apps</span>
+            {% endfor %}
+          </div>
+          {% if profile_user.profile.hourly_rate %}
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:0.78rem;color:var(--text-muted);">Soatlik narx</div>
+            <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--accent);margin-top:4px;">
+              {{ profile_user.profile.hourly_rate }} so'm/soat
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Portfolio -->
+  <div data-content="portfolio" style="display:none;">
+    {% if profile_user.portfolio_items.exists %}
+      <div class="projects-grid">
+        {% for item in profile_user.portfolio_items.all %}
+        <div class="project-card">
+          <div class="project-card-content">
+            {% if item.image %}
+              <img src="{{ item.image.url }}" alt="{{ item.title }}" style="border-radius:var(--radius-sm);margin-bottom:14px;width:100%;height:160px;object-fit:cover;">
+            {% else %}
+              <div style="height:140px;background:linear-gradient(135deg,var(--bg-secondary),var(--bg-card-hover));border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🖼️</div>
+            {% endif %}
+            <h3 class="project-title">{{ item.title }}</h3>
+            <p class="project-desc">{{ item.description|truncatewords:15 }}</p>
+            {% if item.url %}
+              <a href="{{ item.url }}" target="_blank" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- Demo portfolio -->
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-card-content">
+            <div style="height:140px;background:linear-gradient(135deg,#1a0a2e,#0a1a2e);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🛒</div>
+            <h3 class="project-title">E-commerce Platform</h3>
+            <p class="project-desc">React + Django asosida to'liq online do'kon. Payment integratsiya bilan.</p>
+            <a href="#" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-card-content">
+            <div style="height:140px;background:linear-gradient(135deg,#0a2e1a,#1a2e0a);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📱</div>
+            <h3 class="project-title">Fitness Tracker App</h3>
+            <p class="project-desc">Flutter bilan cross-platform mobil ilova. 10,000+ yuklab olingan.</p>
+            <a href="#" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-card-content">
+            <div style="height:140px;background:linear-gradient(135deg,#2e1a0a,#2e0a1a);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📊</div>
+            <h3 class="project-title">CRM Dashboard</h3>
+            <p class="project-desc">Kompaniya uchun real-time analytics va mijozlar boshqaruv tizimi.</p>
+            <a href="#" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+    {% if is_own_profile %}
+      <div style="text-align:center;margin-top:24px;">
+        <button class="btn btn-outline">➕ Portfolio qo'shish</button>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Tab: Skills -->
+  <div data-content="skills" style="display:none;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div class="card">
+        <h3 style="font-size:1rem;margin-bottom:20px;">Texnik ko'nikmalar</h3>
+        {% if profile_user.profile.skills.exists %}
+          {% for skill in profile_user.profile.skills.all %}
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.88rem;font-weight:600;">{{ skill.name }}</span>
+              <span style="font-size:0.78rem;color:var(--accent);">{{ skill.level }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:{{ skill.level }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <!-- Demo skills -->
+          {% for skill_data in "Python:90,Django:85,React:80,JavaScript:88,PostgreSQL:75,Docker:65"|split:"," %}
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.88rem;font-weight:600;">{{ skill_data|split:":"|first }}</span>
+              <span style="font-size:0.78rem;color:var(--accent);">{{ skill_data|split:":"|last }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:{{ skill_data|split:":"|last }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+          <!-- Fallback static skills -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.88rem;font-weight:600;">Python / Django</span>
+              <span style="font-size:0.78rem;color:var(--accent);">90%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:90%;"></div></div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.88rem;font-weight:600;">React / JavaScript</span>
+              <span style="font-size:0.78rem;color:var(--accent);">85%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:85%;"></div></div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.88rem;font-weight:600;">PostgreSQL</span>
+              <span style="font-size:0.78rem;color:var(--accent);">75%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:75%;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.88rem;font-weight:600;">Docker / DevOps</span>
+              <span style="font-size:0.78rem;color:var(--accent);">65%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:65%;"></div></div>
+          </div>
+        {% endif %}
+      </div>
+      <div class="card">
+        <h3 style="font-size:1rem;margin-bottom:20px;">Til ko'nikmalari</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:600;">O'zbek tili</span>
+            <span class="badge badge-success">Ona tili</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:600;">Rus tili</span>
+            <span class="badge badge-info">Ravon</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:600;">Ingliz tili</span>
+            <span class="badge badge-accent">O'rta daraja</span>
+          </div>
+        </div>
+
+        <h3 style="font-size:1rem;margin-bottom:16px;margin-top:28px;">Teglar</h3>
+        <div class="skills-grid">
+          <span class="skill-tag">Backend</span>
+          <span class="skill-tag">API</span>
+          <span class="skill-tag">Django</span>
+          <span class="skill-tag">React</span>
+          <span class="skill-tag">REST</span>
+          <span class="skill-tag">SQL</span>
+          <span class="skill-tag">Git</span>
+          <span class="skill-tag">Linux</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Reviews -->
+  <div data-content="reviews" style="display:none;">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      {% if profile_user.received_reviews.exists %}
+        {% for review in profile_user.received_reviews.all %}
+        <div class="card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="avatar avatar-sm" style="background:var(--accent-dim);">{{ review.author.first_name.0 }}</div>
+              <div>
+                <div style="font-weight:700;font-size:0.9rem;">{{ review.author.get_full_name }}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">{{ review.created_at|date:"d M Y" }}</div>
+              </div>
+            </div>
+            <div class="stars">{% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <!-- Demo reviews -->
+        <div class="card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="avatar avatar-sm" style="background:rgba(77,159,255,0.15);color:var(--info);">B</div>
+              <div>
+                <div style="font-weight:700;font-size:0.9rem;">Bobur Karimov</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">5 Mart 2025</div>
+              </div>
+            </div>
+            <div class="stars">★★★★★</div>
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">Juda professional ishchi. Loyihani o'z vaqtida topshirdi va sifat a'lo darajada edi. Yana ishlaymiz!</p>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="avatar avatar-sm" style="background:rgba(62,207,142,0.15);color:var(--success);">S</div>
+              <div>
+                <div style="font-weight:700;font-size:0.9rem;">Sarvar Holiqov</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">20 Fevral 2025</div>
+              </div>
+            </div>
+            <div class="stars">★★★★★</div>
+          </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">Django API ishlab chiqishda ajoyib mutaxassis. Kod toza, dokumentatsiya batafsil. Albatta tavsiya qilaman!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function editBio() {
+    document.getElementById('bioDisplay').style.display = 'none';
+    document.getElementById('bioForm').style.display = 'block';
+  }
+  function cancelBio() {
+    document.getElementById('bioDisplay').style.display = 'block';
+    document.getElementById('bioForm').style.display = 'none';
+  }
+</script>
+{% endblock %}
