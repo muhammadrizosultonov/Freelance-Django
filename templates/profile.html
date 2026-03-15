@@ -1,4 +1,4 @@
-{% extends 'freelance/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ profile_user.get_full_name|default:profile_user.username }} — FreelanceUZ{% endblock %}
@@ -53,8 +53,8 @@
         {% if profile_user.profile.role == 'freelancer' %}
         <div style="display:flex;align-items:center;gap:4px;">
           <div class="stars">★★★★★</div>
-          <span style="font-size:0.88rem;font-weight:700;">{{ profile_user.profile.rating|default:'4.9' }}</span>
-          <span style="font-size:0.78rem;color:var(--text-muted);">({{ profile_user.profile.reviews_count|default:'24' }} sharh)</span>
+          <span style="font-size:0.88rem;font-weight:700;">{{ rating }}</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);">({{ reviews_count }} sharh)</span>
         </div>
         {% endif %}
       </div>
@@ -75,19 +75,19 @@
   {% if profile_user.profile.role == 'freelancer' %}
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;">
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
-      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--accent);">{{ profile_user.profile.completed_jobs|default:'18' }}</div>
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--accent);">{{ completed_jobs }}</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Tugatilgan ishlar</div>
     </div>
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
-      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--success);">{{ profile_user.profile.success_rate|default:'96' }}%</div>
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--success);">{{ success_rate }}%</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Muvaffaqiyat darajasi</div>
     </div>
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
-      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;">{{ profile_user.profile.response_time|default:'2' }}s</div>
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;">{{ response_time }}s</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Javob vaqti (soat)</div>
     </div>
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;">
-      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--info);">{{ profile_user.profile.total_earned|default:'42' }}M</div>
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--info);">{{ total_earned }}M</div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">Jami daromad (so'm)</div>
     </div>
   </div>
@@ -104,7 +104,7 @@
   </div>
 
   <!-- Tab: About -->
-  <div data-content="about">
+  <div class="tab-content" data-content="about">
     <div style="display:grid;grid-template-columns:1fr 320px;gap:32px;">
 
       <!-- Left: bio, experience -->
@@ -152,25 +152,41 @@
             </div>
             {% endfor %}
           {% else %}
-            <!-- Demo experience -->
-            <div style="display:flex;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
-              <div style="width:44px;height:44px;background:var(--accent-dim);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🏢</div>
-              <div>
-                <div style="font-weight:700;">Senior Frontend Developer</div>
-                <div style="font-size:0.85rem;color:var(--accent);">TechUZ Solutions</div>
-                <div style="font-size:0.78rem;color:var(--text-muted);">2022 — Hozir</div>
-                <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">React va Vue.js asosida korporativ web ilovalar yaratish</p>
-              </div>
+            <p style="color:var(--text-secondary);font-size:0.9rem;">Hali tajriba qo'shilmagan.</p>
+          {% endif %}
+          {% if is_own_profile %}
+            <div style="margin-top:16px;">
+              <button class="btn btn-outline btn-sm" type="button" onclick="toggleExperienceForm()">➕ Tajriba qo'shish</button>
             </div>
-            <div style="display:flex;gap:14px;">
-              <div style="width:44px;height:44px;background:rgba(77,159,255,0.12);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">💻</div>
-              <div>
-                <div style="font-weight:700;">Full Stack Developer</div>
-                <div style="font-size:0.85rem;color:var(--info);">Freelance</div>
-                <div style="font-size:0.78rem;color:var(--text-muted);">2020 — 2022</div>
-                <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">Turli xil veb loyihalar, Django va React bilan ishlash</p>
+            <form id="experienceForm" style="display:none;margin-top:16px;" method="post" action="{% url 'profile_experience_add' %}">
+              {% csrf_token %}
+              <div class="form-group">
+                <label class="form-label" for="{{ experience_form.title.id_for_label }}">Lavozim</label>
+                {{ experience_form.title }}
               </div>
-            </div>
+              <div class="form-group">
+                <label class="form-label" for="{{ experience_form.company.id_for_label }}">Kompaniya</label>
+                {{ experience_form.company }}
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                  <label class="form-label" for="{{ experience_form.start_date.id_for_label }}">Boshlanish</label>
+                  {{ experience_form.start_date }}
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="{{ experience_form.end_date.id_for_label }}">Tugash</label>
+                  {{ experience_form.end_date }}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="{{ experience_form.description.id_for_label }}">Izoh</label>
+                {{ experience_form.description }}
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button type="submit" class="btn btn-primary btn-sm">Saqlash</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="toggleExperienceForm()">Bekor</button>
+              </div>
+            </form>
           {% endif %}
         </div>
         {% endif %}
@@ -210,9 +226,7 @@
             {% for cat in profile_user.profile.categories.all %}
               <span class="badge badge-muted">{{ cat.name }}</span>
             {% empty %}
-              <span class="badge badge-muted">Web Development</span>
-              <span class="badge badge-muted">UI/UX Design</span>
-              <span class="badge badge-muted">Mobile Apps</span>
+              <span style="font-size:0.85rem;color:var(--text-muted);">Kategoriyalar tanlanmagan.</span>
             {% endfor %}
           </div>
           {% if profile_user.profile.hourly_rate %}
@@ -230,7 +244,7 @@
   </div>
 
   <!-- Tab: Portfolio -->
-  <div data-content="portfolio" style="display:none;">
+  <div class="tab-content" data-content="portfolio" style="display:none;">
     {% if profile_user.portfolio_items.exists %}
       <div class="projects-grid">
         {% for item in profile_user.portfolio_items.all %}
@@ -251,43 +265,40 @@
         {% endfor %}
       </div>
     {% else %}
-      <!-- Demo portfolio -->
-      <div class="projects-grid">
-        <div class="project-card">
-          <div class="project-card-content">
-            <div style="height:140px;background:linear-gradient(135deg,#1a0a2e,#0a1a2e);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">🛒</div>
-            <h3 class="project-title">E-commerce Platform</h3>
-            <p class="project-desc">React + Django asosida to'liq online do'kon. Payment integratsiya bilan.</p>
-            <a href="#" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
-          </div>
-        </div>
-        <div class="project-card">
-          <div class="project-card-content">
-            <div style="height:140px;background:linear-gradient(135deg,#0a2e1a,#1a2e0a);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📱</div>
-            <h3 class="project-title">Fitness Tracker App</h3>
-            <p class="project-desc">Flutter bilan cross-platform mobil ilova. 10,000+ yuklab olingan.</p>
-            <a href="#" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
-          </div>
-        </div>
-        <div class="project-card">
-          <div class="project-card-content">
-            <div style="height:140px;background:linear-gradient(135deg,#2e1a0a,#2e0a1a);border-radius:var(--radius-sm);margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📊</div>
-            <h3 class="project-title">CRM Dashboard</h3>
-            <p class="project-desc">Kompaniya uchun real-time analytics va mijozlar boshqaruv tizimi.</p>
-            <a href="#" class="btn btn-outline btn-sm" style="margin-top:12px;">Ko'rish →</a>
-          </div>
-        </div>
-      </div>
+      <p style="color:var(--text-secondary);font-size:0.9rem;">Portfolio hali qo'shilmagan.</p>
     {% endif %}
     {% if is_own_profile %}
-      <div style="text-align:center;margin-top:24px;">
-        <button class="btn btn-outline">➕ Portfolio qo'shish</button>
+      <div style="margin-top:20px;">
+        <button class="btn btn-outline btn-sm" type="button" onclick="togglePortfolioForm()">➕ Portfolio qo'shish</button>
       </div>
+      <form id="portfolioForm" style="display:none;margin-top:16px;" method="post" action="{% url 'profile_portfolio_add' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="{{ portfolio_form.title.id_for_label }}">Sarlavha</label>
+          {{ portfolio_form.title }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ portfolio_form.description.id_for_label }}">Tavsif</label>
+          {{ portfolio_form.description }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ portfolio_form.url.id_for_label }}">Link</label>
+          {{ portfolio_form.url }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="{{ portfolio_form.image.id_for_label }}">Rasm</label>
+          {{ portfolio_form.image }}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="submit" class="btn btn-primary btn-sm">Saqlash</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="togglePortfolioForm()">Bekor</button>
+        </div>
+      </form>
     {% endif %}
   </div>
 
   <!-- Tab: Skills -->
-  <div data-content="skills" style="display:none;">
+  <div class="tab-content" data-content="skills" style="display:none;">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <div class="card">
         <h3 style="font-size:1rem;margin-bottom:20px;">Texnik ko'nikmalar</h3>
@@ -304,47 +315,27 @@
           </div>
           {% endfor %}
         {% else %}
-          <!-- Demo skills -->
-          {% for skill_data in "Python:90,Django:85,React:80,JavaScript:88,PostgreSQL:75,Docker:65"|split:"," %}
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:0.88rem;font-weight:600;">{{ skill_data|split:":"|first }}</span>
-              <span style="font-size:0.78rem;color:var(--accent);">{{ skill_data|split:":"|last }}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width:{{ skill_data|split:":"|last }}%;"></div>
-            </div>
+          <p style="color:var(--text-secondary);font-size:0.9rem;">Ko'nikmalar hali qo'shilmagan.</p>
+        {% endif %}
+        {% if is_own_profile %}
+          <div style="margin-top:16px;">
+            <button class="btn btn-outline btn-sm" type="button" onclick="toggleSkillForm()">➕ Ko'nikma qo'shish</button>
           </div>
-          {% endfor %}
-          <!-- Fallback static skills -->
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:0.88rem;font-weight:600;">Python / Django</span>
-              <span style="font-size:0.78rem;color:var(--accent);">90%</span>
+          <form id="skillForm" style="display:none;margin-top:16px;" method="post" action="{% url 'profile_skill_add' %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <label class="form-label" for="{{ skill_form.name.id_for_label }}">Ko'nikma</label>
+              {{ skill_form.name }}
             </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:90%;"></div></div>
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:0.88rem;font-weight:600;">React / JavaScript</span>
-              <span style="font-size:0.78rem;color:var(--accent);">85%</span>
+            <div class="form-group">
+              <label class="form-label" for="{{ skill_form.level.id_for_label }}">Daraja (0-100)</label>
+              {{ skill_form.level }}
             </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:85%;"></div></div>
-          </div>
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:0.88rem;font-weight:600;">PostgreSQL</span>
-              <span style="font-size:0.78rem;color:var(--accent);">75%</span>
+            <div style="display:flex;gap:8px;">
+              <button type="submit" class="btn btn-primary btn-sm">Saqlash</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="toggleSkillForm()">Bekor</button>
             </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:75%;"></div></div>
-          </div>
-          <div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-              <span style="font-size:0.88rem;font-weight:600;">Docker / DevOps</span>
-              <span style="font-size:0.78rem;color:var(--accent);">65%</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:65%;"></div></div>
-          </div>
+          </form>
         {% endif %}
       </div>
       <div class="card">
@@ -380,7 +371,7 @@
   </div>
 
   <!-- Tab: Reviews -->
-  <div data-content="reviews" style="display:none;">
+  <div class="tab-content" data-content="reviews" style="display:none;">
     <div style="display:flex;flex-direction:column;gap:16px;">
       {% if profile_user.received_reviews.exists %}
         {% for review in profile_user.received_reviews.all %}
@@ -399,33 +390,7 @@
         </div>
         {% endfor %}
       {% else %}
-        <!-- Demo reviews -->
-        <div class="card">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div class="avatar avatar-sm" style="background:rgba(77,159,255,0.15);color:var(--info);">B</div>
-              <div>
-                <div style="font-weight:700;font-size:0.9rem;">Bobur Karimov</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);">5 Mart 2025</div>
-              </div>
-            </div>
-            <div class="stars">★★★★★</div>
-          </div>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">Juda professional ishchi. Loyihani o'z vaqtida topshirdi va sifat a'lo darajada edi. Yana ishlaymiz!</p>
-        </div>
-        <div class="card">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div class="avatar avatar-sm" style="background:rgba(62,207,142,0.15);color:var(--success);">S</div>
-              <div>
-                <div style="font-weight:700;font-size:0.9rem;">Sarvar Holiqov</div>
-                <div style="font-size:0.75rem;color:var(--text-muted);">20 Fevral 2025</div>
-              </div>
-            </div>
-            <div class="stars">★★★★★</div>
-          </div>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6;">Django API ishlab chiqishda ajoyib mutaxassis. Kod toza, dokumentatsiya batafsil. Albatta tavsiya qilaman!</p>
-        </div>
+        <p style="color:var(--text-secondary);font-size:0.9rem;">Sharhlar hali mavjud emas.</p>
       {% endif %}
     </div>
   </div>
@@ -443,6 +408,21 @@
   function cancelBio() {
     document.getElementById('bioDisplay').style.display = 'block';
     document.getElementById('bioForm').style.display = 'none';
+  }
+  function toggleExperienceForm() {
+    const form = document.getElementById('experienceForm');
+    if (!form) return;
+    form.style.display = form.style.display === 'none' || !form.style.display ? 'block' : 'none';
+  }
+  function toggleSkillForm() {
+    const form = document.getElementById('skillForm');
+    if (!form) return;
+    form.style.display = form.style.display === 'none' || !form.style.display ? 'block' : 'none';
+  }
+  function togglePortfolioForm() {
+    const form = document.getElementById('portfolioForm');
+    if (!form) return;
+    form.style.display = form.style.display === 'none' || !form.style.display ? 'block' : 'none';
   }
 </script>
 {% endblock %}

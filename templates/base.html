@@ -19,24 +19,29 @@
 <!-- Navigation -->
 <nav class="navbar" id="navbar">
     <div class="nav-container">
-        <a href="/" class="nav-logo">
+        <a href="{% url 'home' %}" class="nav-logo">
             <span class="logo-mark">F</span>
             <span class="logo-text">reelance<em>UZ</em></span>
         </a>
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span class="nav-greeting">Salom, {{ user.first_name|default:user.username }}</span>
-                {% if user.profile.role == 'freelancer' %}
-                    <a href="{% url 'freelancer_dashboard' %}" class="nav-link">Dashboard</a>
-                {% else %}
-                    <a href="{% url 'client_dashboard' %}" class="nav-link">Dashboard</a>
+                <a href="{% url 'home' %}" class="nav-link">Dashboard</a>
+                {% if user.role == 'client' %}
+                    <a href="{% url 'project_create' %}" class="nav-link">Yangi loyiha</a>
+                {% endif %}
+                {% if user.role == 'freelancer' %}
+                    <a href="{% url 'project_list' %}" class="nav-link">Loyihalar</a>
                 {% endif %}
                 <a href="{% url 'profile' %}" class="nav-link">Profil</a>
                 <a href="{% url 'chat' %}" class="nav-link">Xabarlar</a>
-                <a href="{% url 'logout' %}" class="btn btn-outline">Chiqish</a>
+                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline">Chiqish</button>
+                </form>
             {% else %}
-                <a href="#" class="nav-link">Kirish</a>
-                <a href="#" class="btn btn-primary">Ro'yxatdan o'tish</a>
+                <a href="{% url 'login' %}" class="nav-link">Kirish</a>
+                <a href="{% url 'signup' %}" class="btn btn-primary">Ro'yxatdan o'tish</a>
             {% endif %}
         </div>
         <button class="nav-toggle" id="navToggle">
@@ -49,13 +54,22 @@
 <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-inner">
         {% if user.is_authenticated %}
-            <a href="{% url 'freelancer_dashboard' %}" class="mobile-link">Dashboard</a>
+            <a href="{% url 'home' %}" class="mobile-link">Dashboard</a>
+            {% if user.role == 'client' %}
+                <a href="{% url 'project_create' %}" class="mobile-link">Yangi loyiha</a>
+            {% endif %}
+            {% if user.role == 'freelancer' %}
+                <a href="{% url 'project_list' %}" class="mobile-link">Loyihalar</a>
+            {% endif %}
             <a href="{% url 'profile' %}" class="mobile-link">Profil</a>
             <a href="{% url 'chat' %}" class="mobile-link">Xabarlar</a>
-            <a href="{% url 'logout' %}" class="mobile-link">Chiqish</a>
+            <form action="{% url 'logout' %}" method="post" class="logout-form-mobile">
+                {% csrf_token %}
+                <button type="submit" class="mobile-link">Chiqish</button>
+            </form>
         {% else %}
-            <a href="#" class="mobile-link">Kirish</a>
-            <a href="#" class="mobile-link">Ro'yxatdan o'tish</a>
+            <a href="{% url 'login' %}" class="mobile-link">Kirish</a>
+            <a href="{% url 'signup' %}" class="mobile-link">Ro'yxatdan o'tish</a>
         {% endif %}
     </div>
 </div>
@@ -81,7 +95,7 @@
 <footer class="footer">
     <div class="footer-container">
         <div class="footer-brand">
-            <a href="/" class="nav-logo">
+            <a href="{% url 'home' %}" class="nav-logo">
                 <span class="logo-mark">F</span>
                 <span class="logo-text">reelance<em>UZ</em></span>
             </a>
@@ -90,21 +104,21 @@
         <div class="footer-links">
             <div class="footer-col">
                 <h4>Platforma</h4>
-                <a href="#">Freelancerlar</a>
-                <a href="#">Loyihalar</a>
-                <a href="#">Kategoriyalar</a>
+                <a href="{% url 'home' %}">Freelancerlar</a>
+                <a href="{% url 'home' %}">Loyihalar</a>
+                <a href="{% url 'home' %}">Kategoriyalar</a>
             </div>
             <div class="footer-col">
                 <h4>Kompaniya</h4>
-                <a href="#">Biz haqimizda</a>
-                <a href="#">Blog</a>
-                <a href="#">Aloqa</a>
+                <a href="{% url 'home' %}">Biz haqimizda</a>
+                <a href="{% url 'home' %}">Blog</a>
+                <a href="{% url 'home' %}">Aloqa</a>
             </div>
             <div class="footer-col">
                 <h4>Qo'llab-quvvatlash</h4>
-                <a href="#">Yordam markazi</a>
-                <a href="#">Maxfiylik</a>
-                <a href="#">Shartlar</a>
+                <a href="{% url 'home' %}">Yordam markazi</a>
+                <a href="{% url 'home' %}">Maxfiylik</a>
+                <a href="{% url 'home' %}">Shartlar</a>
             </div>
         </div>
     </div>
@@ -114,6 +128,14 @@
 </footer>
 
 <script src="{% static 'js/main.js' %}"></script>
+<script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.twemoji) {
+      twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+    }
+  });
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

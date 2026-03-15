@@ -1,7 +1,8 @@
-{% extends 'freelance/base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Xabarlar — FreelanceUZ{% endblock %}
+{% block body_class %}chat-page{% endblock %}
 
 {% block content %}
 <div class="chat-layout">
@@ -10,8 +11,14 @@
   <div class="chat-sidebar">
     <div class="chat-sidebar-header">
       <h3 style="font-size:1.1rem;margin-bottom:2px;">Xabarlar</h3>
-      <p style="font-size:0.8rem;color:var(--text-muted);">{{ conversations.count|default:'6' }} ta suhbat</p>
+      <p style="font-size:0.8rem;color:var(--text-muted);">{{ conversations|length }} ta suhbat</p>
       <div class="chat-search">
+        <span class="search-icon" aria-hidden="true">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
         <input type="text" placeholder="Qidirish..." id="chatSearchInput">
       </div>
     </div>
@@ -19,9 +26,9 @@
     <div class="chat-list" id="chatList">
       {% if conversations %}
         {% for conv in conversations %}
-        <div class="chat-item {% if forloop.first %}active{% endif %}"
-             data-chat="{{ conv.id }}"
-             onclick="openChat('{{ conv.id }}', '{{ conv.other_user.get_full_name }}')">
+        <a class="chat-item {% if conv.id == active_conversation_id %}active{% endif %}"
+           data-chat="{{ conv.id }}"
+           href="{% url 'chat' %}?user={{ conv.other_user.id }}">
           <div class="avatar avatar-md" style="background:var(--accent-dim);">
             {% if conv.other_user.profile.avatar %}
               <img src="{{ conv.other_user.profile.avatar.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
@@ -39,65 +46,17 @@
               <div class="unread-dot"></div>
             {% endif %}
           </div>
-        </div>
+        </a>
         {% endfor %}
       {% else %}
-        <!-- Demo conversations -->
-        <div class="chat-item active" data-user="Akbar Toshmatov">
-          <div class="avatar avatar-md" style="background:var(--accent-dim);">A</div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">Akbar Toshmatov</div>
-            <div class="chat-item-preview">Loyiha haqida gaplashaylik</div>
+        <div class="empty-state" style="padding:24px 16px;">
+          <div class="empty-icon">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+            </svg>
           </div>
-          <div class="chat-item-meta">
-            <span class="chat-item-time">14:32</span>
-            <div class="unread-dot"></div>
-          </div>
-        </div>
-
-        <div class="chat-item" data-user="Nilufar Rahimova">
-          <div class="avatar avatar-md" style="background:rgba(62,207,142,0.15);color:var(--success);">N</div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">Nilufar Rahimova</div>
-            <div class="chat-item-preview">Rahmat, tez orada yuboraman</div>
-          </div>
-          <div class="chat-item-meta">
-            <span class="chat-item-time">12:15</span>
-          </div>
-        </div>
-
-        <div class="chat-item" data-user="Bobur Karimov">
-          <div class="avatar avatar-md" style="background:rgba(77,159,255,0.15);color:var(--info);">B</div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">Bobur Karimov</div>
-            <div class="chat-item-preview">Qachon tayyor bo'ladi?</div>
-          </div>
-          <div class="chat-item-meta">
-            <span class="chat-item-time">Kecha</span>
-            <div class="unread-dot"></div>
-          </div>
-        </div>
-
-        <div class="chat-item" data-user="Dilshod Nazarov">
-          <div class="avatar avatar-md" style="background:rgba(255,77,109,0.15);color:var(--danger);">D</div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">Dilshod Nazarov</div>
-            <div class="chat-item-preview">OK, men tushundim. Boshlaylik!</div>
-          </div>
-          <div class="chat-item-meta">
-            <span class="chat-item-time">Kecha</span>
-          </div>
-        </div>
-
-        <div class="chat-item" data-user="Zulfiya Mahmudova">
-          <div class="avatar avatar-md" style="background:rgba(155,77,255,0.15);color:#9b4dff;">Z</div>
-          <div class="chat-item-info">
-            <div class="chat-item-name">Zulfiya Mahmudova</div>
-            <div class="chat-item-preview">Siz bilan ishlash juda qulay edi</div>
-          </div>
-          <div class="chat-item-meta">
-            <span class="chat-item-time">2 kun</span>
-          </div>
+          <h3>Suhbatlar yo'q</h3>
+          <p>Hozircha ochiq chatlar mavjud emas.</p>
         </div>
       {% endif %}
     </div>
@@ -108,82 +67,144 @@
 
     <!-- Chat header -->
     <div class="chat-header" id="chatHeaderEl">
-      <div class="avatar avatar-md" style="background:var(--accent-dim);">A</div>
+      <div class="avatar avatar-md" style="background:var(--accent-dim);">
+        {% if active_user %}
+          {{ active_user.first_name.0|default:active_user.username.0|upper }}
+        {% else %}
+          ?
+        {% endif %}
+      </div>
       <div class="chat-header-info">
-        <h3 id="chatPartnerName">Akbar Toshmatov</h3>
-        <span id="chatPartnerStatus">🟢 Onlayn</span>
+        <div class="chat-header-title">
+          <h3 id="chatPartnerName">
+            {% if active_user %}
+              {{ active_user.get_full_name|default:active_user.username }}
+            {% else %}
+              Chat
+            {% endif %}
+          </h3>
+          {% if active_contract and active_contract.status|lower != "active" %}
+            <span class="badge {% if active_contract.status|lower == 'finished' %}badge-success{% else %}badge-danger{% endif %}">
+              {{ active_contract.get_status_display }}
+            </span>
+          {% endif %}
+        </div>
+        <span id="chatPartnerStatus">{% if active_user %}🟢 Onlayn{% else %}—{% endif %}</span>
       </div>
       <div style="margin-left:auto;display:flex;gap:8px;">
-        <button class="btn btn-ghost btn-sm" data-tooltip="Video qo'ng'iroq">📹</button>
-        <button class="btn btn-ghost btn-sm" data-tooltip="Ovozli qo'ng'iroq">📞</button>
-        <button class="btn btn-ghost btn-sm" data-tooltip="Loyiha ma'lumoti">ℹ️</button>
+        {% if active_contract and active_contract.client_id == user.id and active_contract.status|lower == "active" %}
+          <button type="button" class="btn btn-ghost btn-sm" data-contract-action="finished">Yakunlash</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-contract-action="cancelled">Bekor qilish</button>
+        {% endif %}
+        {% if active_conversation_id %}
+          <button class="btn btn-ghost btn-sm icon-btn" id="contractInfoToggle" data-tooltip="Loyiha ma'lumoti" aria-label="Loyiha ma'lumoti">
+            <svg class="icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </button>
+        {% endif %}
       </div>
     </div>
+
+    {% if active_conversation_id %}
+      <div class="contract-popover" id="contractPopover" aria-hidden="true">
+        {% if active_contract %}
+          <div class="contract-popover-title">{{ active_contract.project.title }}</div>
+          <div class="contract-popover-meta">
+            <span class="badge badge-info">{{ active_contract.get_status_display }}</span>
+            <span>Kelishilgan: {{ active_contract.agreed_price }}</span>
+          </div>
+          <div class="contract-popover-row">
+            <span>Loyiha holati:</span>
+            <span>{{ active_contract.project.get_status_display }}</span>
+          </div>
+          <div class="contract-popover-row">
+            <span>Muddat:</span>
+            <span>{{ active_contract.project.deadline|date:"d M Y" }}</span>
+          </div>
+        {% else %}
+          <div class="contract-popover-title">Loyiha topilmadi</div>
+          <div class="contract-popover-empty">Bu suhbatga ulangan shartnoma mavjud emas.</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if active_contract and active_contract.client_id == user.id and active_contract.status|lower == "active" %}
+      <div class="review-modal" id="reviewModal" aria-hidden="true">
+        <div class="review-modal-backdrop" data-review-close="true"></div>
+        <div class="review-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+          <div class="review-modal-header">
+            <h4 id="reviewModalTitle">Freelancerni baholash</h4>
+            <button type="button" class="btn btn-ghost btn-sm icon-btn" data-review-close="true" aria-label="Yopish">✕</button>
+          </div>
+          <form method="post" action="{% url 'chat_contract_action' %}">
+            {% csrf_token %}
+            <input type="hidden" name="contract_id" value="{{ active_contract.id }}">
+            <input type="hidden" name="status_action" id="contractStatusAction" value="">
+            <div class="form-group">
+              <label class="form-label">Baho</label>
+              <select name="rating" class="form-control">
+                <option value="">Tanlang</option>
+                <option value="1">1 / 5</option>
+                <option value="2">2 / 5</option>
+                <option value="3">3 / 5</option>
+                <option value="4">4 / 5</option>
+                <option value="5">5 / 5</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Izoh (ixtiyoriy)</label>
+              <textarea name="comment" class="form-control" rows="3" placeholder="Qisqacha fikr"></textarea>
+            </div>
+            <div class="review-modal-actions">
+              <button type="button" class="btn btn-ghost" data-review-close="true">Bekor qilish</button>
+              <button type="submit" class="btn btn-primary">Saqlash</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    {% endif %}
 
     <!-- Messages -->
     <div class="chat-messages" id="chatMessages">
 
-      <!-- Date separator -->
-      <div style="text-align:center;margin:8px 0;">
-        <span style="background:rgba(255,255,255,0.05);padding:6px 14px;border-radius:100px;font-size:0.75rem;color:var(--text-muted);">Bugun</span>
-      </div>
-
-      <!-- Demo messages -->
-      <div class="message-group">
-        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
-        <div>
-          <div class="message-bubble">Salom! Korporativ sayt loyihasi haqida gaplashmoqchi edim.</div>
-          <span class="message-time">09:15</span>
+      {% if active_conversation_id %}
+        {% if active_messages %}
+          {% for msg in active_messages %}
+            <div class="message-group {% if msg.sender == user %}own{% endif %}">
+              <div class="avatar avatar-sm" style="background:var(--accent-dim);">
+                {{ msg.sender.first_name.0|default:msg.sender.username.0|upper }}
+              </div>
+              <div>
+                <div class="message-bubble">{{ msg.content }}</div>
+                <span class="message-time">{{ msg.created_at|time:"H:i" }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state" style="padding:24px 0;">
+          <div class="empty-icon">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+            </svg>
+          </div>
+          <h3>Hali xabar yo'q</h3>
+          <p>Suhbatni boshlash uchun pastdan yozing.</p>
         </div>
-      </div>
-
-      <div class="message-group own">
-        <div class="avatar avatar-sm" style="background:rgba(245,166,35,0.2);">M</div>
-        <div>
-          <div class="message-bubble">Salom! Ha, albatta. Qanday funksionallik kerak?</div>
-          <span class="message-time">09:16</span>
+      {% endif %}
+    {% else %}
+      <div class="empty-state" style="padding:24px 0;">
+          <div class="empty-icon">
+            <svg class="icon icon-lg" viewBox="0 0 24 24">
+              <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+            </svg>
+          </div>
+          <h3>Suhbat tanlanmagan</h3>
+          <p>Chap tomondan suhbatni tanlang yoki profil orqali xabar yuboring.</p>
         </div>
-      </div>
-
-      <div class="message-group">
-        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
-        <div>
-          <div class="message-bubble">Asosiy sahifa, xizmatlar, portfolio va aloqa sahifalari kerak. Dizayn zamonaviy bo'lishi shart.</div>
-          <span class="message-time">09:18</span>
-        </div>
-      </div>
-
-      <div class="message-group own">
-        <div class="avatar avatar-sm" style="background:rgba(245,166,35,0.2);">M</div>
-        <div>
-          <div class="message-bubble">Tushundim. Figmada prototip yaratib ko'rsatib beraman. 2-3 kun vaqt bersangiz yetarli. 💪</div>
-          <span class="message-time">09:20</span>
-        </div>
-      </div>
-
-      <div class="message-group">
-        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
-        <div>
-          <div class="message-bubble">Ajoyib! Narx haqida ham gaplashaylik — byudjetimiz 2,000,000 so'm atrofida.</div>
-          <span class="message-time">09:22</span>
-        </div>
-      </div>
-
-      <div class="message-group own">
-        <div class="avatar avatar-sm" style="background:rgba(245,166,35,0.2);">M</div>
-        <div>
-          <div class="message-bubble">Yaxshi, bu narx mos keladi. Shartnoma tuzib olsak bo'ladi. Men today Figma faylni yuboraman.</div>
-          <span class="message-time">09:24</span>
-        </div>
-      </div>
-
-      <div class="message-group">
-        <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
-        <div>
-          <div class="message-bubble">Loyiha haqida gaplashaylik 👋</div>
-          <span class="message-time">14:32</span>
-        </div>
-      </div>
+      {% endif %}
 
     </div>
 
@@ -200,27 +221,62 @@
     </div>
 
     <!-- Input area -->
-    <div class="chat-input-area">
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('fileUpload').click()" data-tooltip="Fayl yuborish">📎</button>
-        <button class="btn btn-ghost btn-sm" data-tooltip="Emoji">😊</button>
+    {% if active_conversation_id %}
+    <div class="chat-input-area" id="chatInputArea">
+      <div class="chat-input-tools">
+        <button type="button" class="btn btn-ghost btn-sm icon-btn" onclick="document.getElementById('fileUpload').click()" data-tooltip="Fayl yuborish" aria-label="Fayl yuborish">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.19 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+          </svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm icon-btn" id="emojiToggle" data-tooltip="Emoji" aria-expanded="false" aria-controls="emojiPicker" aria-label="Emoji">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+          </svg>
+        </button>
         <input type="file" id="fileUpload" style="display:none" multiple>
       </div>
-      <div class="chat-input-wrapper">
+      <div class="emoji-picker" id="emojiPicker" aria-hidden="true">
+        <button type="button" class="emoji-btn" data-emoji="😀" aria-label="Grinning">😀</button>
+        <button type="button" class="emoji-btn" data-emoji="😁" aria-label="Beaming">😁</button>
+        <button type="button" class="emoji-btn" data-emoji="😂" aria-label="Joy">😂</button>
+        <button type="button" class="emoji-btn" data-emoji="😍" aria-label="Love">😍</button>
+        <button type="button" class="emoji-btn" data-emoji="😎" aria-label="Cool">😎</button>
+        <button type="button" class="emoji-btn" data-emoji="😊" aria-label="Smile">😊</button>
+        <button type="button" class="emoji-btn" data-emoji="😢" aria-label="Sad">😢</button>
+        <button type="button" class="emoji-btn" data-emoji="😡" aria-label="Angry">😡</button>
+        <button type="button" class="emoji-btn" data-emoji="👍" aria-label="Thumbs up">👍</button>
+        <button type="button" class="emoji-btn" data-emoji="🙏" aria-label="Thanks">🙏</button>
+        <button type="button" class="emoji-btn" data-emoji="🔥" aria-label="Fire">🔥</button>
+        <button type="button" class="emoji-btn" data-emoji="🎉" aria-label="Party">🎉</button>
+        <button type="button" class="emoji-btn" data-emoji="💼" aria-label="Work">💼</button>
+        <button type="button" class="emoji-btn" data-emoji="✅" aria-label="Check">✅</button>
+        <button type="button" class="emoji-btn" data-emoji="❗" aria-label="Important">❗</button>
+        <button type="button" class="emoji-btn" data-emoji="❤️" aria-label="Heart">❤️</button>
+      </div>
+      <div class="chat-file-preview" id="filePreview" aria-live="polite"></div>
+      <form class="chat-input-wrapper" id="chatForm" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="conversation_id" value="{{ active_conversation_id }}">
         <textarea
           class="chat-input"
           id="chatInput"
+          name="message"
           placeholder="Xabar yozing..."
           rows="1"
         ></textarea>
-        <button class="chat-send-btn" id="sendBtn">
+        <button type="submit" class="chat-send-btn" id="sendBtn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="22" y1="2" x2="11" y2="13"/>
             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>
         </button>
-      </div>
+      </form>
     </div>
+    {% endif %}
 
   </div>
 </div>
@@ -229,6 +285,90 @@
 @keyframes typing-dot {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.chat-main { position: relative; }
+
+.chat-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contract-popover {
+  position: absolute;
+  top: 70px;
+  right: 24px;
+  width: 280px;
+  background: rgba(15, 17, 23, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  border-radius: 16px;
+  padding: 14px 16px;
+  z-index: 20;
+  display: none;
+}
+.contract-popover.open {
+  display: block;
+}
+.contract-popover-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.contract-popover-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  gap: 8px;
+}
+.contract-popover-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.contract-popover-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.review-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 60;
+}
+.review-modal.open { display: block; }
+.review-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+.review-modal-dialog {
+  position: relative;
+  width: min(420px, 92vw);
+  margin: 12vh auto 0;
+  background: rgba(15, 17, 23, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+}
+.review-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.review-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }
 </style>
 {% endblock %}
@@ -244,31 +384,96 @@
     });
   });
 
-  // Open chat
-  function openChat(id, name) {
-    document.getElementById('chatPartnerName').textContent = name || 'Chat';
-    document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
-    const item = document.querySelector(`[data-chat="${id}"], [data-user="${name}"]`);
-    item?.classList.add('active');
-    const dot = item?.querySelector('.unread-dot');
-    if (dot) dot.remove();
-
-    // Scroll to bottom
-    const msgs = document.getElementById('chatMessages');
-    if (msgs) msgs.scrollTop = msgs.scrollHeight;
-  }
-
   // Scroll to bottom on load
   const chatMsgs = document.getElementById('chatMessages');
   if (chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
 
+  function escapeHtml(value) {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // File upload preview
   document.getElementById('fileUpload')?.addEventListener('change', function() {
     const files = Array.from(this.files);
-    if (files.length === 0) return;
-    const chatInput = document.getElementById('chatInput');
-    chatInput.value = files.map(f => `📎 ${f.name}`).join('\n');
+    const preview = document.getElementById('filePreview');
+    if (!preview) return;
+    if (files.length === 0) {
+      preview.innerHTML = '';
+      return;
+    }
+    preview.innerHTML = files
+      .map(file => `<span class="file-chip">📎 ${escapeHtml(file.name)}</span>`)
+      .join('');
+    if (window.twemoji) {
+      twemoji.parse(preview, { folder: 'svg', ext: '.svg' });
+    }
     this.value = '';
+  });
+
+  const contractToggle = document.getElementById('contractInfoToggle');
+  const contractPopover = document.getElementById('contractPopover');
+  if (contractToggle && contractPopover) {
+    contractToggle.addEventListener('click', function(event) {
+      event.stopPropagation();
+      const isOpen = contractPopover.classList.toggle('open');
+      contractPopover.setAttribute('aria-hidden', String(!isOpen));
+    });
+    document.addEventListener('click', function(event) {
+      if (!contractPopover.classList.contains('open')) return;
+      if (!contractPopover.contains(event.target) && event.target !== contractToggle) {
+        contractPopover.classList.remove('open');
+        contractPopover.setAttribute('aria-hidden', 'true');
+      }
+    });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && contractPopover.classList.contains('open')) {
+        contractPopover.classList.remove('open');
+        contractPopover.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  const reviewModal = document.getElementById('reviewModal');
+  const statusInput = document.getElementById('contractStatusAction');
+  const modalTitle = document.getElementById('reviewModalTitle');
+  const actionButtons = document.querySelectorAll('[data-contract-action]');
+  const closeButtons = document.querySelectorAll('[data-review-close]');
+
+  function openReviewModal(action) {
+    if (!reviewModal || !statusInput) return;
+    statusInput.value = action;
+    if (modalTitle) {
+      modalTitle.textContent = action === 'cancelled' ? 'Bekor qilish va baholash' : 'Yakunlash va baholash';
+    }
+    reviewModal.classList.add('open');
+    reviewModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeReviewModal() {
+    if (!reviewModal) return;
+    reviewModal.classList.remove('open');
+    reviewModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  actionButtons.forEach(btn => {
+    btn.addEventListener('click', () => openReviewModal(btn.dataset.contractAction));
+  });
+
+  closeButtons.forEach(btn => {
+    btn.addEventListener('click', closeReviewModal);
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && reviewModal?.classList.contains('open')) {
+      closeReviewModal();
+    }
   });
 </script>
 {% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Daromadlar — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:6px;">Daromadlar</h1>
+      <p style="color:var(--text-secondary);">Tugallangan shartnomalardan tushgan daromadlar.</p>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;">Jami daromad</div>
+        <div style="font-family:var(--font-display);font-weight:800;font-size:1.8rem;color:var(--accent);">
+          {{ total_earnings }} so'm
+        </div>
+      </div>
+      <span class="badge badge-success">Tugallangan shartnomalar</span>
+    </div>
+  </div>
+
+  {% if contracts %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Loyiha</th>
+            <th>Buyurtmachi</th>
+            <th>To'lov</th>
+            <th>Sana</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contract in contracts %}
+          <tr>
+            <td style="color:var(--text-primary);font-weight:500;">{{ contract.project.title }}</td>
+            <td>{{ contract.client.get_full_name|default:contract.client.username }}</td>
+            <td style="color:var(--accent);font-weight:600;">{{ contract.agreed_price }}</td>
+            <td>{{ contract.updated_at|date:"d M Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💰</div>
+      <h3>Daromadlar yo'q</h3>
+      <p>Hozircha tugallangan shartnomalar mavjud emas.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

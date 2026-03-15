@@ -9,11 +9,46 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_env_file(path: Path) -> dict[str, str]:
+    values: dict[str, str] = {}
+    if not path.exists():
+        return values
+
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        if line.lower().startswith('export '):
+            line = line[7:].strip()
+            if not line or '=' not in line:
+                continue
+        key, value = line.split('=', 1)
+        value = value.strip()
+        if value and value[0] not in {'"', "'"} and '#' in value:
+            value = value.split('#', 1)[0].rstrip()
+        values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
+
+
+ENV_FILE_VALUES = _load_env_file(BASE_DIR / '.env')
+
+
+def env(key: str, default=None):
+    if key in ENV_FILE_VALUES:
+        return ENV_FILE_VALUES[key]
+    return os.getenv(key, default)
+
+
+def env_bool(key: str, default=False):
+    value = env(key, str(default))
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
 # Quick-start development settings - unsuitable for production
@@ -42,6 +77,7 @@ INSTALLED_APPS = [
     'users',
     'chat',
     'base',
+    'service',
 ]
 
 MIDDLEWARE = [
@@ -79,8 +115,12 @@ WSGI_APPLICATION = 'conf.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': env('DATABASE', 'django.db.backends.postgresql'),
+        'NAME': env('DB_NAME', env('DBNAME')),
+        'USER': env('DB_USER', env('USER', 'postgres')),
+        'PASSWORD': env('DB_PASSWORD', env('PASSWORD')),
+        'HOST': env('DB_HOST', env('HOST', '127.0.0.1')),
+        'PORT': env('DB_PORT', env('PORT', '5432')),
     }
 }
 
@@ -119,13 +159,71 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STAIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+EMAIL_BACKEND = env('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = (env('EMAIL_HOST', '') or '').strip()
+EMAIL_PORT = int(env('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = (env('EMAIL_HOST_USER', '') or '').strip()
+EMAIL_HOST_PASSWORD = (env('EMAIL_HOST_PASSWORD', '') or '').replace(' ', '').strip()
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
+DEFAULT_FROM_EMAIL = (env('DEFAULT_FROM_EMAIL', 'no-reply@freelanceuz.uz') or '').strip()
 
-LOGIN_REDIRECT_URL = 'user/'
-LOGOUT_REDIRECT_URL = 'user/login/'
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'login/'
+
+# Jazzmin admin theme (premium look)
+JAZZMIN_SETTINGS = {
+    "site_title": "FreelanceUZ Admin",
+    "site_header": "FreelanceUZ Admin",
+    "site_brand": "FreelanceUZ",
+    "welcome_sign": "Premium boshqaruv paneli",
+    "search_model": "users.CustomUser",
+    "topmenu_links": [
+        {"name": "Dashboard", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"model": "users.CustomUser"},
+        {"model": "service.Project"},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "changeform_format": "horizontal_tabs",
+    "related_modal_active": True,
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "users.CustomUser": "fas fa-user-circle",
+        "service.Project": "fas fa-briefcase",
+        "service.Bid": "fas fa-file-signature",
+        "service.Contract": "fas fa-handshake",
+    },
+    "default_icon_parents": "fas fa-folder",
+    "default_icon_children": "fas fa-file",
+    "order_with_respect_to": ["users", "service", "auth", "chat", "base"],
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "darkly",
+    "navbar": "navbar-dark",
+    "brand_colour": "navbar-warning",
+    "accent": "accent-warning",
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "button_classes": {
+        "primary": "btn btn-warning",
+        "secondary": "btn btn-outline-light",
+        "info": "btn btn-info",
+        "warning": "btn btn-warning",
+        "danger": "btn btn-danger",
+        "success": "btn btn-success",
+    },
+}

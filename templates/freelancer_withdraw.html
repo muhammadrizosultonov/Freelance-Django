@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pul yechish — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:6px;">Pul yechish</h1>
+      <p style="color:var(--text-secondary);">Mablag'ingizni yechib olish uchun so'rov yuboring.</p>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Miqdor (so'm)</label>
+        <input type="number" class="form-control" name="amount" placeholder="Masalan: 500000" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Karta raqami</label>
+        <input type="text" class="form-control" name="card_number" placeholder="0000 0000 0000 0000" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">To'lov usuli</label>
+        <select class="form-control" name="method" required>
+          <option value="card">Plastik karta</option>
+          <option value="bank">Bank o'tkazmasi</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">So'rov yuborish</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

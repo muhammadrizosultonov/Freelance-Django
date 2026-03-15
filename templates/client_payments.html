@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}To'lovlar — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:6px;">To'lovlar</h1>
+      <p style="color:var(--text-secondary);">Shartnomalar bo'yicha to'lovlar tarixi.</p>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+
+  {% if payments %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Loyiha</th>
+            <th>Freelancer</th>
+            <th>To'lov</th>
+            <th>Holat</th>
+            <th>Sana</th>
+            <th>Baho</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for payment in payments %}
+          <tr>
+            <td style="color:var(--text-primary);font-weight:500;">{{ payment.project.title }}</td>
+            <td>{{ payment.freelancer.get_full_name|default:payment.freelancer.username }}</td>
+            <td style="color:var(--accent);font-weight:600;">{{ payment.agreed_price }}</td>
+            <td>
+              {% with status=payment.status|lower %}
+                <span class="badge {% if status == 'finished' %}badge-success{% elif status == 'cancelled' %}badge-danger{% else %}badge-info{% endif %}">
+                  {{ payment.get_status_display }}
+                </span>
+              {% endwith %}
+            </td>
+            <td>{{ payment.updated_at|date:"d M Y" }}</td>
+            <td>
+              {% with status=payment.status|lower %}
+                {% if status == 'finished' or status == 'cancelled' %}
+                  {% if payment.review %}
+                    <span class="badge badge-success">{{ payment.review.rating }}/5</span>
+                  {% else %}
+                    <a href="{% url 'client_review' payment.id %}" class="btn btn-ghost btn-sm">Baholash</a>
+                  {% endif %}
+                {% else %}
+                  <span style="color:var(--text-muted);">—</span>
+                {% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💳</div>
+      <h3>To'lovlar yo'q</h3>
+      <p>Hozircha shartnomalar bo'yicha to'lovlar mavjud emas.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

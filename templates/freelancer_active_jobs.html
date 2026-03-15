@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Faol ishlar — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:6px;">Faol ishlar</h1>
+      <p style="color:var(--text-secondary);">Sizga biriktirilgan faol loyihalar ro'yxati.</p>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+
+  {% if contracts %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Loyiha</th>
+            <th>Buyurtmachi</th>
+            <th>Kelishilgan narx</th>
+            <th>Muddat</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contract in contracts %}
+          <tr>
+            <td style="color:var(--text-primary);font-weight:500;">{{ contract.project.title }}</td>
+            <td>{{ contract.client.get_full_name|default:contract.client.username }}</td>
+            <td style="color:var(--accent);font-weight:600;">{{ contract.agreed_price }}</td>
+            <td>{{ contract.project.deadline|date:"d M Y" }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="progress-bar" style="width:120px;">
+                  <div class="progress-fill" style="width:{{ contract.project.progress }}%;"></div>
+                </div>
+                <span style="font-size:0.8rem;color:var(--text-muted);">{{ contract.project.progress }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">⚡</div>
+      <h3>Faol ishlar yo'q</h3>
+      <p>Hozircha sizga biriktirilgan loyiha mavjud emas.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

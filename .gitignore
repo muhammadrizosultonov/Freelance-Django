@@ -1,2 +1,28 @@
-venv
-db.sqlite3
+__pycache__/
+*.py[cod]
+*.sqlite3
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# Environments
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+env/
+
+# Django static/media
+staticfiles/
+media/
+
+# Editors/IDE
+.idea/
+.vscode/
+
+# Logs
+*.log

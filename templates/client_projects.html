@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mening loyihalarim — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:6px;">Mening loyihalarim</h1>
+      <p style="color:var(--text-secondary);">Yaratilgan loyihalar ro'yxati.</p>
+    </div>
+    <a href="{% url 'project_create' %}" class="btn btn-primary btn-sm">➕ Yangi loyiha</a>
+  </div>
+
+  {% if projects %}
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Loyiha</th>
+            <th>Holat</th>
+            <th>Byudjet</th>
+            <th>Progress</th>
+            <th>Freelancer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project in projects %}
+          <tr>
+            <td style="color:var(--text-primary);font-weight:500;">{{ project.title }}</td>
+            <td>
+              <span class="badge badge-info">{{ project.get_status_display }}</span>
+            </td>
+            <td style="color:var(--accent);font-weight:600;">{{ project.budget }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="progress-bar" style="width:120px;">
+                  <div class="progress-fill" style="width:{{ project.progress }}%;"></div>
+                </div>
+                <span style="font-size:0.8rem;color:var(--text-muted);">{{ project.progress }}%</span>
+              </div>
+            </td>
+            <td>
+              {% with contract=project.contract_set.first %}
+                {% if contract %}
+                  {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
+                {% else %}
+                  <span style="color:var(--text-muted);">Tayinlanmagan</span>
+                {% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      <h3>Hozircha loyiha yo'q</h3>
+      <p>Yangi loyiha yaratish uchun yuqoridagi tugmani bosing.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

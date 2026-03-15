@@ -24,9 +24,9 @@
       <p>Hisobingizga kiring va davom eting</p>
     </div>
 
-    {% if form.non_field_errors %}
+    {% if error %}
     <div style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;font-size:0.88rem;color:var(--danger);">
-      {{ form.non_field_errors.0 }}
+      {{ error }}
     </div>
     {% endif %}
 
@@ -34,23 +34,22 @@
       {% csrf_token %}
 
       <div class="form-group">
-        <label class="form-label" for="username">Foydalanuvchi nomi yoki Email</label>
+        <label class="form-label" for="identifier">Email yoki telefon raqam</label>
         <input
           type="text"
-          class="form-control {% if form.username.errors %}error{% endif %}"
-          id="username"
-          name="username"
-          placeholder="akbar_dev"
+          class="form-control"
+          id="identifier"
+          name="identifier"
+          placeholder="+998901234567 yoki user@mail.com"
           required
           autofocus
           autocomplete="username"
-          value="{{ form.username.value|default:'' }}"
+          value="{% if otp_verified %}{{ verified_identifier|default:'' }}{% else %}{{ identifier|default:'' }}{% endif %}"
+          {% if otp_sent or otp_verified %}readonly{% endif %}
         >
-        {% if form.username.errors %}
-          <span class="form-error">{{ form.username.errors.0 }}</span>
-        {% endif %}
       </div>
 
+      {% if otp_verified %}
       <div class="form-group">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <label class="form-label" for="password">Parol</label>
@@ -59,7 +58,7 @@
         <div style="position:relative;">
           <input
             type="password"
-            class="form-control {% if form.password.errors %}error{% endif %}"
+            class="form-control"
             id="password"
             name="password"
             placeholder="Parolingizni kiriting"
@@ -71,10 +70,22 @@
             👁
           </button>
         </div>
-        {% if form.password.errors %}
-          <span class="form-error">{{ form.password.errors.0 }}</span>
-        {% endif %}
       </div>
+      {% elif otp_sent %}
+      <div class="form-group">
+        <label class="form-label" for="code">Tasdiqlash kodi</label>
+        <input
+          type="text"
+          class="form-control"
+          id="code"
+          name="code"
+          placeholder="6 xonali kod"
+          required
+          inputmode="numeric"
+          autocomplete="one-time-code"
+        >
+      </div>
+      {% endif %}
 
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);">
@@ -84,12 +95,31 @@
         </label>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-full btn-lg">
+      {% if otp_verified %}
+      <button type="submit" class="btn btn-primary btn-full btn-lg" name="action" value="password">
         Kirish
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
         </svg>
       </button>
+      {% elif otp_sent %}
+      <button type="submit" class="btn btn-primary btn-full btn-lg" name="action" value="verify">
+        Kirish
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+        </svg>
+      </button>
+      <button type="submit" class="btn btn-outline btn-full" name="action" value="send" style="margin-top:10px;">
+        {% if resent_in %}Qayta yuborish ({{ resent_in }}s){% else %}Kodni qayta yuborish{% endif %}
+      </button>
+      {% else %}
+      <button type="submit" class="btn btn-primary btn-full btn-lg" name="action" value="send">
+        Kod yuborish
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+        </svg>
+      </button>
+      {% endif %}
     </form>
 
     <div class="auth-divider">
@@ -115,7 +145,7 @@
     </div>
 
     <p class="auth-footer">
-      Hisobingiz yo'qmi? <a href="#">Ro'yxatdan o'tish</a>
+      Hisobingiz yo'qmi? <a href="{% url 'signup' %}">Ro'yxatdan o'tish</a>
     </p>
   </div>
 </div>
@@ -123,10 +153,22 @@
 
 {% block extra_js %}
 <script>
+  function setPremiumEmoji(btn, emoji) {
+    if (window.twemoji) {
+      btn.innerHTML = twemoji.parse(emoji, { folder: 'svg', ext: '.svg' });
+    } else {
+      btn.textContent = emoji;
+    }
+  }
+
   function togglePassword(id, btn) {
     const input = document.getElementById(id);
     input.type = input.type === 'password' ? 'text' : 'password';
-    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+    setPremiumEmoji(btn, input.type === 'password' ? '👁' : '🙈');
+  }
+
+  if (document.getElementById('code')) {
+    document.getElementById('code').focus();
   }
 </script>
 {% endblock %}

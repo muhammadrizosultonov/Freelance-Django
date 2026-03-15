@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Loyihalar — FreelanceUZ{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:6px;">Loyihalar toping</h1>
+      <p style="color:var(--text-secondary);">Sizga mos loyihalarga ariza yuboring.</p>
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-ghost btn-sm">← Dashboard</a>
+  </div>
+
+  {% if projects %}
+    <div class="projects-grid">
+      {% for project in projects %}
+        <div class="project-card animate-in">
+          <div class="project-card-content">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <span class="badge badge-info">{{ project.get_status_display }}</span>
+              <span style="font-size:0.78rem;color:var(--text-muted);">{{ project.category|default:"Kategoriya" }}</span>
+            </div>
+            <h3 class="project-title">{{ project.title }}</h3>
+            <p class="project-desc">{{ project.description|truncatewords:20 }}</p>
+            <div class="project-meta">
+              <span class="project-budget">{{ project.budget }} so'm</span>
+              <div style="font-size:0.82rem;color:var(--text-secondary);">
+                Buyurtmachi: {{ project.client.get_full_name|default:project.client.username }}
+              </div>
+            </div>
+            <div style="margin-top:12px;font-size:0.78rem;color:var(--text-muted);">
+              Muddat: {{ project.deadline|date:"d M Y H:i" }}
+            </div>
+
+            {% if project.id in bid_project_ids %}
+              <div style="margin-top:14px;display:flex;align-items:center;gap:8px;">
+                <span class="badge badge-success">Ariza yuborilgan</span>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Qayta yuborish mumkin emas</span>
+              </div>
+            {% else %}
+              <form method="post" action="{% url 'project_bid' project.id %}" style="margin-top:14px;">
+                {% csrf_token %}
+                <div class="form-group">
+                  <label class="form-label">Taklif narxi</label>
+                  <input type="number" name="price" step="0.01" class="form-control" placeholder="Masalan: 1500000" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Xabar</label>
+                  <textarea name="message" class="form-control" rows="3" placeholder="Qisqacha taklif yozing..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Bid yuborish</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔎</div>
+      <h3>Hozircha ochiq loyihalar yo'q</h3>
+      <p>Yaqin orada yangi loyihalar qo'shiladi.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

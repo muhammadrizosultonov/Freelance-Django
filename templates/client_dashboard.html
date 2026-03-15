@@ -14,7 +14,7 @@
           {% if user.profile.avatar %}
             <img src="{{ user.profile.avatar.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
           {% else %}
-            Muhammadrizo
+            {{ user.first_name.0|default:user.username.0|upper }}
           {% endif %}
         </div>
         <div style="min-width:0;">
@@ -29,43 +29,90 @@
       </div>
 
       <div class="sidebar-label">Loyihalar</div>
-      <a href="#" class="sidebar-link active">
-        <span class="icon">📊</span> Dashboard
+      <a href="{% url 'home' %}" class="sidebar-link active">
+        <svg class="icon" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+        </svg>
+        Dashboard
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="icon">➕</span> Yangi loyiha
+      <a href="{% url 'project_create' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        Yangi loyiha
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="icon">📁</span> Mening loyihalarim
-        <span class="count">{{ projects_count|default:'4' }}</span>
+      <a href="{% url 'client_projects' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M3 7a2 2 0 0 1 2-2h4l2 2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        </svg>
+        Mening loyihalarim
+        <span class="count">{{ projects_count }}</span>
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="icon">📨</span> Arizalar
-        <span class="count">{{ pending_proposals|default:'12' }}</span>
+      <a href="{% url 'client_proposals' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M22 12l-3-7H5l-3 7v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"></path>
+          <path d="M2 12h6l2 3h4l2-3h6"></path>
+        </svg>
+        Arizalar
+        <span class="count">{{ pending_proposals }}</span>
       </a>
     </div>
 
     <div class="sidebar-section">
       <div class="sidebar-label">Moliya</div>
-      <a href="#" class="sidebar-link">
-        <span class="icon">💳</span> To'lovlar
+      <a href="{% url 'client_payments' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+          <line x1="7" y1="15" x2="11" y2="15"></line>
+        </svg>
+        To'lovlar
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="icon">🧾</span> Hisobotlar
+      <a href="{% url 'client_reports' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="8" y1="13" x2="16" y2="13"></line>
+          <line x1="8" y1="17" x2="13" y2="17"></line>
+        </svg>
+        Hisobotlar
       </a>
     </div>
 
     <div class="sidebar-section">
       <div class="sidebar-label">Boshqa</div>
-      <a href="#" class="sidebar-link">
-        <span class="icon">💬</span> Xabarlar
-        <span class="count">{{ unread_messages|default:'3' }}</span>
+      <a href="{% url 'chat' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+        </svg>
+        Xabarlar
+        <span class="count">{{ unread_messages }}</span>
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="icon">👤</span> Profil
+      <a href="{% url 'profile' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="7" r="4"></circle>
+          <path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path>
+        </svg>
+        Profil
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="icon">⚙️</span> Sozlamalar
+      <a href="{% url 'client_settings' %}" class="sidebar-link">
+        <svg class="icon" viewBox="0 0 24 24">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+        Sozlamalar
       </a>
     </div>
   </aside>
@@ -76,11 +123,16 @@
     <div class="dashboard-header animate-in">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
         <div>
-          <h1>Salom, {{ user.first_name|default:user.username }}! 🚀</h1>
+          <h1>Salom, {{ user.first_name|default:user.username }}!</h1>
           <p style="color:var(--text-secondary);">Loyihalaringizni boshqaring va eng yaxshi freelancerlarni toping</p>
         </div>
-        <a href="#" class="btn btn-primary">
-          ➕ Yangi loyiha joylash
+        <a href="{% url 'project_create' %}" class="btn btn-primary">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          Yangi loyiha joylash
         </a>
       </div>
     </div>
@@ -88,28 +140,47 @@
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card animate-in animate-delay-1">
-        <div class="stat-icon" style="background:rgba(77,159,255,0.12);">📁</div>
-        <div class="stat-value" data-count="{{ total_projects|default:'8' }}">0</div>
+        <div class="stat-icon" style="background:rgba(77,159,255,0.12);">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </svg>
+        </div>
+        <div class="stat-value" data-count="{{ total_projects }}">0</div>
         <div class="stat-label">Jami loyihalar</div>
-        <div class="stat-change">4 ta faol</div>
+        <div class="stat-change">Faol: {{ active_projects_count }}</div>
       </div>
       <div class="stat-card animate-in animate-delay-2">
-        <div class="stat-icon" style="background:rgba(62,207,142,0.12);">✅</div>
-        <div class="stat-value" data-count="{{ completed_projects|default:'5' }}">0</div>
+        <div class="stat-icon" style="background:rgba(62,207,142,0.12);">
+          <svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9 12l2 2 4-4"></path>
+          </svg>
+        </div>
+        <div class="stat-value" data-count="{{ completed_projects }}">0</div>
         <div class="stat-label">Tugatilgan</div>
-        <div class="stat-change">↑ 2 bu oy</div>
+        <div class="stat-change">Jami: {{ total_projects }}</div>
       </div>
       <div class="stat-card animate-in animate-delay-3">
-        <div class="stat-icon" style="background:rgba(245,166,35,0.12);">💰</div>
-        <div class="stat-value" data-count="{{ total_spent|default:'6800000' }}" data-suffix=" so'm">0</div>
+        <div class="stat-icon" style="background:rgba(245,166,35,0.12);">
+          <svg class="icon" viewBox="0 0 24 24">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="stat-value" data-count="{{ total_spent }}" data-suffix=" so'm">0</div>
         <div class="stat-label">Jami sarflangan</div>
-        <div class="stat-change">Bu oy 1.2M so'm</div>
+        <div class="stat-change">Shartnomalar: {{ contracts_count }}</div>
       </div>
       <div class="stat-card animate-in animate-delay-4">
-        <div class="stat-icon" style="background:rgba(255,77,109,0.12);">📨</div>
-        <div class="stat-value" data-count="{{ pending_proposals|default:'12' }}">0</div>
+        <div class="stat-icon" style="background:rgba(255,77,109,0.12);">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M22 12l-3-7H5l-3 7v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"></path>
+            <path d="M2 12h6l2 3h4l2-3h6"></path>
+          </svg>
+        </div>
+        <div class="stat-value" data-count="{{ pending_proposals }}">0</div>
         <div class="stat-label">Kutilayotgan arizalar</div>
-        <div class="stat-change">3 ta yangi bugun</div>
+        <div class="stat-change">Jami: {{ proposals_count }}</div>
       </div>
     </div>
 
@@ -134,10 +205,19 @@
               <div class="project-meta">
                 <span class="project-budget">{{ project.budget }}</span>
                 <div style="display:flex;align-items:center;gap:6px;">
-                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">
-                    {{ project.freelancer.first_name.0|default:'?' }}
-                  </div>
-                  <span style="font-size:0.82rem;color:var(--text-secondary);">{{ project.freelancer.get_full_name|default:'Tayinlanmagan' }}</span>
+                  {% with contract=project.contract_set.first %}
+                    {% if contract %}
+                      <div class="avatar avatar-sm" style="background:var(--accent-dim);">
+                        {{ contract.freelancer.first_name.0|default:'?' }}
+                      </div>
+                      <span style="font-size:0.82rem;color:var(--text-secondary);">
+                        {{ contract.freelancer.get_full_name|default:'Freelancer' }}
+                      </span>
+                    {% else %}
+                      <div class="avatar avatar-sm" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">?</div>
+                      <span style="font-size:0.82rem;color:var(--text-muted);">Tayinlanmagan</span>
+                    {% endif %}
+                  {% endwith %}
                 </div>
               </div>
               <div class="progress-bar" style="margin-top:12px;">
@@ -148,68 +228,14 @@
           </div>
           {% endfor %}
         {% else %}
-          <!-- Demo projects -->
-          <div class="project-card animate-in animate-delay-1">
-            <div class="project-card-content">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span class="badge badge-success">Faol</span>
-                <span style="font-size:0.78rem;color:var(--text-muted);">Web dizayn</span>
-              </div>
-              <h3 class="project-title">Korporativ sayt yaratish</h3>
-              <p class="project-desc">Kompaniyamiz uchun zamonaviy, responsive va SEO-optimallashtirilgan sayt kerak.</p>
-              <div class="project-meta">
-                <span class="project-budget">2,000,000 so'm</span>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">A</div>
-                  <span style="font-size:0.82rem;color:var(--text-secondary);">Akbar Toshmatov</span>
-                </div>
-              </div>
-              <div class="progress-bar" style="margin-top:12px;">
-                <div class="progress-fill" style="width:70%;"></div>
-              </div>
-              <div style="text-align:right;font-size:0.78rem;color:var(--text-muted);margin-top:4px;">70% bajarildi</div>
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg class="icon icon-lg" viewBox="0 0 24 24">
+                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
             </div>
-          </div>
-
-          <div class="project-card animate-in animate-delay-2">
-            <div class="project-card-content">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span class="badge badge-info">Ariza kutilmoqda</span>
-                <span style="font-size:0.78rem;color:var(--text-muted);">Mobil ilovalar</span>
-              </div>
-              <h3 class="project-title">Android delivery ilovasi</h3>
-              <p class="project-desc">Oziq-ovqat yetkazib berish xizmati uchun to'liq funksional Android ilovasi kerak.</p>
-              <div class="project-meta">
-                <span class="project-budget">5,500,000 so'm</span>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <div class="avatar avatar-sm" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">?</div>
-                  <span style="font-size:0.82rem;color:var(--text-muted);">Tayinlanmagan</span>
-                </div>
-              </div>
-              <div style="margin-top:12px;font-size:0.82rem;color:var(--info);">8 ta ariza kelgan</div>
-            </div>
-          </div>
-
-          <div class="project-card animate-in animate-delay-3">
-            <div class="project-card-content">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span class="badge badge-success">Faol</span>
-                <span style="font-size:0.78rem;color:var(--text-muted);">Marketing</span>
-              </div>
-              <h3 class="project-title">SMM va content yaratish</h3>
-              <p class="project-desc">Instagram, Telegram kanallarimiz uchun oylik content strategiyasi va postlar.</p>
-              <div class="project-meta">
-                <span class="project-budget">800,000 so'm/oy</span>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">N</div>
-                  <span style="font-size:0.82rem;color:var(--text-secondary);">Nilufar Rahimova</span>
-                </div>
-              </div>
-              <div class="progress-bar" style="margin-top:12px;">
-                <div class="progress-fill" style="width:40%;"></div>
-              </div>
-              <div style="text-align:right;font-size:0.78rem;color:var(--text-muted);margin-top:4px;">40% bajarildi</div>
-            </div>
+            <h3>Faol loyiha yo'q</h3>
+            <p>Yangi loyiha yaratish uchun yuqoridagi tugmadan foydalaning.</p>
           </div>
         {% endif %}
       </div>
@@ -228,63 +254,65 @@
               <th>Freelancer</th>
               <th>Loyiha</th>
               <th>Taklif narxi</th>
-              <th>Reyting</th>
+              <th>Holat</th>
+              <th>Sana</th>
               <th>Amal</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <div class="avatar avatar-sm" style="background:var(--accent-dim);">D</div>
-                  <div>
-                    <div style="color:var(--text-primary);font-weight:600;font-size:0.88rem;">Dilshod Nazarov</div>
-                    <div style="font-size:0.75rem;color:var(--text-muted);">Python developer</div>
+            {% if recent_proposals %}
+              {% for proposal in recent_proposals %}
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="avatar avatar-sm" style="background:var(--accent-dim);">
+                      {{ proposal.freelancer.first_name.0|default:proposal.freelancer.username.0|upper }}
+                    </div>
+                    <div>
+                      <div style="color:var(--text-primary);font-weight:600;font-size:0.88rem;">
+                        {{ proposal.freelancer.get_full_name|default:proposal.freelancer.username }}
+                      </div>
+                      <div style="font-size:0.75rem;color:var(--text-muted);">@{{ proposal.freelancer.username }}</div>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td>Android delivery ilovasi</td>
-              <td style="color:var(--accent);font-weight:600;">4,800,000 so'm</td>
-              <td>
-                <div style="display:flex;align-items:center;gap:4px;">
-                  <span style="color:var(--accent);">★</span>
-                  <span style="font-size:0.88rem;font-weight:600;">4.8</span>
-                  <span style="font-size:0.75rem;color:var(--text-muted);">(32)</span>
-                </div>
-              </td>
-              <td>
-                <div style="display:flex;gap:6px;">
-                  <button class="btn btn-success btn-sm">Qabul</button>
-                  <button class="btn btn-outline btn-sm">Rad</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <div class="avatar avatar-sm" style="background:rgba(77,159,255,0.15);color:var(--info);">Z</div>
-                  <div>
-                    <div style="color:var(--text-primary);font-weight:600;font-size:0.88rem;">Zulfiya Mahmudova</div>
-                    <div style="font-size:0.75rem;color:var(--text-muted);">Flutter developer</div>
-                  </div>
-                </div>
-              </td>
-              <td>Android delivery ilovasi</td>
-              <td style="color:var(--accent);font-weight:600;">5,200,000 so'm</td>
-              <td>
-                <div style="display:flex;align-items:center;gap:4px;">
-                  <span style="color:var(--accent);">★</span>
-                  <span style="font-size:0.88rem;font-weight:600;">4.9</span>
-                  <span style="font-size:0.75rem;color:var(--text-muted);">(18)</span>
-                </div>
-              </td>
-              <td>
-                <div style="display:flex;gap:6px;">
-                  <button class="btn btn-success btn-sm">Qabul</button>
-                  <button class="btn btn-outline btn-sm">Rad</button>
-                </div>
-              </td>
-            </tr>
+                </td>
+                <td>{{ proposal.project.title }}</td>
+                <td style="color:var(--accent);font-weight:600;">{{ proposal.price }}</td>
+                <td>
+                  {% with status=proposal.status|lower %}
+                    <span class="badge {% if status == 'accepted' %}badge-success{% elif status == 'rejected' %}badge-danger{% else %}badge-info{% endif %}">
+                      {{ proposal.get_status_display }}
+                    </span>
+                  {% endwith %}
+                </td>
+                <td>{{ proposal.created_at|date:"d M Y" }}</td>
+                <td>
+                  {% with status=proposal.status|lower %}
+                    {% if status == 'pending' %}
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <form method="post" action="{% url 'client_bid_action' proposal.id 'accept' %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-success btn-sm">Qabul</button>
+                        </form>
+                        <form method="post" action="{% url 'client_bid_action' proposal.id 'reject' %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-outline btn-sm">Rad</button>
+                        </form>
+                      </div>
+                    {% else %}
+                      <span style="color:var(--text-muted);">—</span>
+                    {% endif %}
+                  {% endwith %}
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">
+                  Hozircha arizalar yo'q
+                </td>
+              </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
